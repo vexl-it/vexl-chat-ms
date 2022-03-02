@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -25,7 +26,7 @@ public class ChatService {
                 request.getUserPublicKey(),
                 request.getReceiverPublicKey());
 
-        String channelId = request.getUserPublicKey() + request.getReceiverPublicKey();
+        String channelId = createChannelId(request.getUserPublicKey(), request.getReceiverPublicKey());
 
         Channel.ChannelGetResponse channel = getOrCreateChannel(request.getUserPublicKey(), request.getReceiverPublicKey(), channelId);
 
@@ -33,6 +34,11 @@ public class ChatService {
                 request.getUserPublicKey(),
                 channel.getChannel().getType(),
                 channelId);
+    }
+
+    private String createChannelId(String userPublicKey, String receiverPublicKey) {
+        return String.join("", Stream.of(userPublicKey, receiverPublicKey)
+                .sorted().toList());
     }
 
     private Channel.ChannelGetResponse getOrCreateChannel(String userPublicKey, String receiverPublicKey, String channelId)
