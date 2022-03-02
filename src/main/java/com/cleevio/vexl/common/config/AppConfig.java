@@ -16,30 +16,33 @@ import java.util.TimeZone;
 @ComponentScan(basePackages = "com.cleevio")
 public class AppConfig {
 
-	@Bean
-	public CorsFilter corsFilter() {
-		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		final CorsConfiguration config = new CorsConfiguration();
-		config.setAllowCredentials(true);
-		config.setAllowedOrigins(Collections.singletonList("*"));
-		config.setAllowedHeaders(Collections.singletonList("*"));
-		config.setAllowedMethods(Collections.singletonList("*"));
-		source.registerCorsConfiguration("/**", config);
-		return new CorsFilter(source);
-	}
+    @Bean
+    public CorsFilter corsFilter() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(Collections.singletonList("*"));
+        config.setAllowedHeaders(Collections.singletonList("*"));
+        config.setAllowedMethods(Collections.singletonList("*"));
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
 
-	@PostConstruct
-	void started() {
-		TimeZone.setDefault(TimeZone.getTimeZone("utc"));
-	}
+    @PostConstruct
+    void setTimezoneAndProperty() {
+        TimeZone.setDefault(TimeZone.getTimeZone("utc"));
+        //todo will be environment properties
+        System.setProperty("STREAM_KEY", "p7w5j3pj397s");
+        System.setProperty("STREAM_SECRET", "j9x3w2tv9fn9xax3j6sx3n2fhaawjgj9rnhr2uafaavtszj8fs53v76r2xt4rbxx");
+    }
 
-	@Bean
-	public CommonsRequestLoggingFilter requestLoggingFilter() {
-		CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
-		loggingFilter.setIncludeClientInfo(true);
-		loggingFilter.setIncludeQueryString(true);
-		loggingFilter.setIncludePayload(true);
-		loggingFilter.setMaxPayloadLength(64000);
-		return loggingFilter;
-	}
+    @Bean
+    public CommonsRequestLoggingFilter requestLoggingFilter() {
+        CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
+        loggingFilter.setIncludeClientInfo(true);
+        loggingFilter.setIncludeQueryString(true);
+        loggingFilter.setIncludePayload(true);
+        loggingFilter.setMaxPayloadLength(64000);
+        return loggingFilter;
+    }
 }
