@@ -59,10 +59,10 @@ public class ChatService {
         }
     }
 
-    private Message.MessageSendResponse sendMessage(String message, String userPublicKey, String channelType, String channelId)
+    private void sendMessage(String message, String userPublicKey, String channelType, String channelId)
             throws SendingMessageException {
         try {
-            return Message.send(channelType, channelId)
+            Message.send(channelType, channelId)
                     .message(
                             Message.MessageRequestObject.builder()
                                     .text(
