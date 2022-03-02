@@ -46,7 +46,8 @@ public abstract class ApiException extends Exception {
     @RequiredArgsConstructor
     public enum Module {
 
-        OFFER("100", "Offer Module Error.");
+        USER("100", "User Module Error."),
+        CHAT("101", "Chat Module Error.");
 
         /**
          * Error custom code
