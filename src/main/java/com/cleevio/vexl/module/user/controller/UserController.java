@@ -44,7 +44,7 @@ public class UserController {
             @ApiResponse(responseCode = "204"),
             @ApiResponse(responseCode = "400 (100101)", description = "User couldn't be created", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @Operation(summary = "Create an user in GetStream service (as an unique identifier we user public_key)")
+    @Operation(summary = "Create an user in GetStream service (as an unique identifier we use public_key)")
     ResponseEntity<Void> createUser(@Valid @RequestBody UserRequest request)
             throws GetStreamException {
         this.userService.createUser(request);
