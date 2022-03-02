@@ -35,8 +35,7 @@ public class ChatService {
                 channelId);
     }
 
-    @Transactional(readOnly = true)
-    private static Channel.ChannelGetResponse getOrCreateChannel(String userPublicKey, String receiverPublicKey, String channelId)
+    private Channel.ChannelGetResponse getOrCreateChannel(String userPublicKey, String receiverPublicKey, String channelId)
             throws ChannelException {
 
         try {
@@ -54,8 +53,7 @@ public class ChatService {
         }
     }
 
-    @Transactional(readOnly = true)
-    private static Message.MessageSendResponse sendMessage(String message, String userPublicKey, String channelType, String channelId)
+    private Message.MessageSendResponse sendMessage(String message, String userPublicKey, String channelType, String channelId)
             throws SendingMessageException {
         try {
             return Message.send(channelType, channelId)
