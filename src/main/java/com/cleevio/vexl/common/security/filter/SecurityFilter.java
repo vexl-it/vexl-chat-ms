@@ -34,7 +34,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         String phoneHash = request.getHeader("phone-hash");
         String signature = request.getHeader("signature");
 
-        if (signature == null || publicKey == null || phoneHash == null || !requestURI.contains("/api/v1/offer")) {
+        if (signature == null || publicKey == null || phoneHash == null || !requestURI.contains("/api/v1/")) {
             filterChain.doFilter(request, response);
             return;
         }
