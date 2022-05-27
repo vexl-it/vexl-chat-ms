@@ -15,4 +15,8 @@ interface MessageRepository extends JpaRepository<Message, Long>, JpaSpecificati
 
     @Query("select case when (count(m) > 0) then true else false end from Message m where m.inbox = :receiverInbox and m.senderPublicKey = :publicKeySender")
     boolean alreadySentRequestAllowence(String publicKeySender, Inbox receiverInbox);
+
+    @Modifying
+    @Query("delete from Message m where m.inbox = :inbox")
+    void deleteAllMessages(Inbox inbox);
 }

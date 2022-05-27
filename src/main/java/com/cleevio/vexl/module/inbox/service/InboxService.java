@@ -49,4 +49,9 @@ public class InboxService {
         return this.inboxRepository.findByPublicKey(publicKeyHash)
                 .orElseThrow(InboxNotFoundException::new);
     }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public void deleteInbox(Inbox inbox) {
+        this.inboxRepository.delete(inbox);
+    }
 }

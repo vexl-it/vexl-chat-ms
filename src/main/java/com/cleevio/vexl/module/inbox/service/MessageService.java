@@ -80,4 +80,9 @@ public class MessageService {
                 .senderPublicKey(senderPublicKey)
                 .build();
     }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public void deleteAllMessages(Inbox inbox) {
+        this.messageRepository.deleteAllMessages(inbox);
+    }
 }

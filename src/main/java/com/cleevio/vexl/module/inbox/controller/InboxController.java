@@ -84,20 +84,6 @@ public class InboxController {
         return messageMapper.mapList(messages);
     }
 
-    @DeleteMapping("{publicKey}/messages")
-    @SecurityRequirements({
-            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
-            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
-            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
-    })
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Delete messages what you already have pulled.",
-            description = "After every pull, check if you have all messages and then remove them with this EP.")
-    void deletePulledMessages(@PathVariable @NotBlank String publicKey) {
-        Inbox inbox = this.inboxService.findInbox(publicKey);
-        this.messageService.deletePulledMessages(inbox);
-    }
-
     @PostMapping("/messages")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
@@ -147,5 +133,33 @@ public class InboxController {
         this.whitelistService.putSenderPublicKeyOnWhitelist(inbox, request.publicKeyToConfirm());
 
         return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{publicKey}/messages")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Delete messages what you already have pulled.",
+            description = "After every pull, check if you have all messages and then remove them with this EP.")
+    void deletePulledMessages(@PathVariable @NotBlank String publicKey) {
+        Inbox inbox = this.inboxService.findInbox(publicKey);
+        this.messageService.deletePulledMessages(inbox);
+    }
+
+    @DeleteMapping("/{publicKey}")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Delete inbox with all messages.")
+    void deleteInbox(@PathVariable @NotBlank String publicKey) {
+        Inbox inbox = this.inboxService.findInbox(publicKey);
+        this.messageService.deleteAllMessages(inbox);
+        this.inboxService.deleteInbox(inbox);
     }
 }
