@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.Set;
 
 @Tag(name = "Inbox")
@@ -70,4 +73,18 @@ public class InboxController {
         Set<Message> messages = this.messageService.retrieveMessages(inbox);
         return messageMapper.mapSet(messages);
     }
+
+    @DeleteMapping("{publicKey}/messages")
+    @SecurityRequirements({
+            @SecurityRequirement(name = "public-key"),
+            @SecurityRequirement(name = "phone-hash"),
+            @SecurityRequirement(name = "signature"),
+    })
+    @Operation(summary = "Delete messages what you already have pulled.",
+            description = "After every pull, check if you have all messages and then remove them with this EP.")
+    void deletePulledMessages(@PathVariable @NotBlank String publicKey) {
+        Inbox inbox = this.inboxService.findInbox(publicKey);
+        this.messageService.deletePulledMessages(inbox);
+    }
+
 }

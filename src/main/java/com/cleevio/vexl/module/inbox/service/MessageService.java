@@ -27,4 +27,9 @@ public class MessageService {
 
         return messages;
     }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public void deletePulledMessages(Inbox inbox) {
+        this.messageRepository.deleteAllPulledMessages(inbox);
+    }
 }
