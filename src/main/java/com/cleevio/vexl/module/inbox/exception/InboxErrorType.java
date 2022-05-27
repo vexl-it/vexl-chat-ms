@@ -12,6 +12,8 @@ public enum InboxErrorType implements ErrorType {
     INBOX_NOT_FOUND("101", "Inbox with sent public key does not exist. Create the inbox first."),
     WHITE_LIST_EXCEPTION("102", "You are not on whitelist. Either you are blocked or you have not yet been approved by the recipient to send messages."),
     ALLOWANCE_NOT_ALLOWED("103", "You cannot send request to allowance. Either you are blocked or you already have sent a request to the recipient."),
+    MISSING_ON_WHITELIST("104", "Contact you want to block/unblock is not on your whitelist. In order to block someone, they must first get on your whitelist." +
+            " They will get on the whitelist if you confirm it via allowance confirm EP."),
     ;
 
     /**

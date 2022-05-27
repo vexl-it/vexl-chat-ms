@@ -1,7 +1,9 @@
 package com.cleevio.vexl.module.inbox.service;
 
+import com.cleevio.vexl.module.inbox.dto.request.BlockInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Whitelist;
+import com.cleevio.vexl.module.inbox.exception.WhitelistMissingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,5 +40,16 @@ public class WhitelistService {
                 .blocked(false)
                 .inbox(inbox)
                 .build();
+    }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public void blockPublicKey(Inbox inbox, BlockInboxRequest request) {
+        String publicKeyToBlockHash = createHash256(request.publicKeyToBlock());
+        Whitelist whitelist = this.whitelistRepository.findOnWhitelist(inbox, publicKeyToBlockHash)
+                .orElseThrow(WhitelistMissingException::new);
+
+        whitelist.setBlocked(request.block());
+        this.whitelistRepository.save(whitelist);
+        log.info("[{}] has been blocked [{}]", whitelist, request.block());
     }
 }

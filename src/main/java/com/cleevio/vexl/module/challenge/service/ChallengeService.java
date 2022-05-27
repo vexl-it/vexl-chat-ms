@@ -6,7 +6,6 @@ import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeCreateException;
 import com.cleevio.vexl.module.challenge.exception.ChallengeMissingException;
-import com.cleevio.vexl.module.inbox.dto.request.MessageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,17 +52,26 @@ public class ChallengeService {
 
         if (ZonedDateTime.now().isAfter(challenge.getCreatedAt().plusMinutes(config.expiration()))) {
             log.info("Challenge [{}] is expired. Setting to invalid and returning exception.", challenge);
-            challenge.setValid(false);
-            this.challengeRepository.save(challenge);
+            invalidateChallenge(challenge);
             throw new ChallengeMissingException();
         }
 
-        return CLibrary.CRYPTO_LIB.ecdsa_verify(
-            challenge.getPublicKey(),
-            challenge.getChallenge(),
-            challenge.getChallenge().length(),
-            signature
+        boolean valid = CLibrary.CRYPTO_LIB.ecdsa_verify(
+                challenge.getPublicKey(),
+                challenge.getChallenge(),
+                challenge.getChallenge().length(),
+                signature
         );
+
+        if (valid) {
+            invalidateChallenge(challenge);
+        }
+        return valid;
+    }
+
+    private void invalidateChallenge(Challenge challenge) {
+        challenge.setValid(false);
+        this.challengeRepository.save(challenge);
     }
 
     private void invalidatedOldChallengeAndCreateNew(@NotNull String challenge, @NotNull String publicKey) {
@@ -102,5 +110,9 @@ public class ChallengeService {
         byte[] codeVerifier = new byte[32];
         secureRandom.nextBytes(codeVerifier);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier);
+    }
+
+    public void removeInvalidAndExpiredChallenges() {
+        this.challengeRepository.removeInvalidAndExpiredChallenges(ZonedDateTime.now().minusMinutes(config.expiration()));
     }
 }

@@ -5,6 +5,7 @@ import com.cleevio.vexl.module.challenge.exception.InvalidChallengeSignature;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
 import com.cleevio.vexl.module.inbox.dto.request.AllowanceConfirmRequest;
 import com.cleevio.vexl.module.inbox.dto.request.AllowanceRequest;
+import com.cleevio.vexl.module.inbox.dto.request.BlockInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.MessageRequest;
 import com.cleevio.vexl.module.inbox.dto.request.SendMessageRequest;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
-import java.util.Set;
 
 @Tag(name = "Inbox")
 @RestController
@@ -84,6 +84,24 @@ public class InboxController {
         return messageMapper.mapList(messages);
     }
 
+    @PutMapping("/block")
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Block/unblock the public key so he can't send you a messages.")
+    ResponseEntity<Void> blockInbox(@Valid @RequestBody BlockInboxRequest request) {
+        if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
+            throw new InvalidChallengeSignature();
+        }
+
+        Inbox inbox = this.inboxService.findInbox(request.publicKey());
+        this.whitelistService.blockPublicKey(inbox, request);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/messages")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
@@ -91,7 +109,7 @@ public class InboxController {
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Send a message to an inbox.",
+    @Operation(summary = "Send a message to the inbox.",
             description = "When user wants to contact someone, use this EP.")
     ResponseEntity<Void> sendMessage(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
                                      @Valid @RequestBody SendMessageRequest request) {
