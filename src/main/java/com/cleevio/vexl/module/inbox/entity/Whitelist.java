@@ -19,7 +19,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-@Table
+@Table(name = "white_list")
 @Entity
 @Data
 @Builder
@@ -27,22 +27,20 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Message {
+public class Whitelist {
 
     @Id
     @EqualsAndHashCode.Include
     @ToString.Include
+    @Getter(value = AccessLevel.PRIVATE)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String message;
+    private String publicKey;
 
     @Column(nullable = false)
-    private String senderPublicKey;
-
-    @Column(nullable = false)
-    private boolean pulled;
+    private boolean blocked;
 
     @JoinColumn(name = "inbox_id", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)

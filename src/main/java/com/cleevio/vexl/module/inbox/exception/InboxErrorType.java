@@ -10,6 +10,8 @@ public enum InboxErrorType implements ErrorType {
 
     DUPLICATED_PUBLIC_KEY("100", "Public key is already used. You cannot create Inbox again."),
     INBOX_NOT_FOUND("101", "Inbox with sent public key does not exist. Create the inbox first."),
+    WHITE_LIST_EXCEPTION("102", "You are not on whitelist. Either you are blocked or you have not yet been approved by the recipient to send messages."),
+    ALLOWANCE_NOT_ALLOWED("103", "You cannot send request to allowance. Either you are blocked or you already have sent a request to the recipient."),
     ;
 
     /**

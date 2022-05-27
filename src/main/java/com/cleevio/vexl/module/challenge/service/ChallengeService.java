@@ -47,8 +47,8 @@ public class ChallengeService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public boolean isSignedChallengeValid(MessageRequest request) {
-        Challenge challenge = this.challengeRepository.findByPublicKey(request.publicKey())
+    public boolean isSignedChallengeValid(String publicKey, String signature) {
+        Challenge challenge = this.challengeRepository.findByPublicKey(publicKey)
                 .orElseThrow(ChallengeMissingException::new);
 
         if (ZonedDateTime.now().isAfter(challenge.getCreatedAt().plusMinutes(config.expiration()))) {
@@ -62,7 +62,7 @@ public class ChallengeService {
             challenge.getPublicKey(),
             challenge.getChallenge(),
             challenge.getChallenge().length(),
-            request.signature()
+            signature
         );
     }
 

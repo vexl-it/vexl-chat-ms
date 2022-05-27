@@ -4,7 +4,7 @@ import com.cleevio.vexl.module.inbox.dto.response.MessageResponse;
 import com.cleevio.vexl.module.inbox.entity.Message;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -17,9 +17,9 @@ public class MessageMapper {
         );
     }
 
-    public Set<MessageResponse> mapSet(Set<Message> messages) {
+    public List<MessageResponse> mapList(List<Message> messages) {
         return messages.stream()
                 .map(this::mapSingle)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 }

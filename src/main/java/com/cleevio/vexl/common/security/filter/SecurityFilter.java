@@ -20,6 +20,10 @@ import java.util.Collections;
 
 public class SecurityFilter extends OncePerRequestFilter {
 
+    public static final String HEADER_PUBLIC_KEY = "public-key";
+    public static final String HEADER_HASH = "hash";
+    public static final String HEADER_SIGNATURE = "signature";
+
     private final SignatureService signatureService;
 
     public SecurityFilter(SignatureService signatureService) {
@@ -30,9 +34,9 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String requestURI = request.getRequestURI();
 
-        String publicKey = request.getHeader("public-key");
-        String hash = request.getHeader("hash");
-        String signature = request.getHeader("signature");
+        String publicKey = request.getHeader(HEADER_PUBLIC_KEY);
+        String hash = request.getHeader(HEADER_HASH);
+        String signature = request.getHeader(HEADER_SIGNATURE);
 
         if (signature == null || publicKey == null || hash == null || !requestURI.contains("/api/v1/")) {
             filterChain.doFilter(request, response);

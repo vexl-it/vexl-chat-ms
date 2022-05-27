@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.challenge.controller;
 
+import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.dto.response.ChallengeCreatedResponse;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
@@ -28,9 +29,9 @@ public class ChallengeController {
 
     @PostMapping
     @SecurityRequirements({
-            @SecurityRequirement(name = "public-key"),
-            @SecurityRequirement(name = "phone-hash"),
-            @SecurityRequirement(name = "signature"),
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new challenge.", description = "Verify that a user actually have the private key to the public key he claims is his")

@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.cleevio.vexl.common.service.CryptoService.createHash256;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,9 +48,5 @@ public class InboxService {
 
         return this.inboxRepository.findByPublicKey(publicKeyHash)
                 .orElseThrow(InboxNotFoundException::new);
-    }
-
-    private String createHash256(String value) {
-        return CLibrary.CRYPTO_LIB.sha256_hash(value, value.length());
     }
 }
