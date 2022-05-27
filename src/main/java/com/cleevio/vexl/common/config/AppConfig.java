@@ -1,5 +1,6 @@
 package com.cleevio.vexl.common.config;
 
+import com.sun.jna.NativeLibrary;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,10 @@ import java.util.TimeZone;
 @Configuration
 @ComponentScan(basePackages = "com.cleevio")
 public class AppConfig {
+
+    static {
+        NativeLibrary.addSearchPath("libvc", "src/main/resources/linux-x86-64/libvc.so");
+    }
 
     @Bean
     public CorsFilter corsFilter() {

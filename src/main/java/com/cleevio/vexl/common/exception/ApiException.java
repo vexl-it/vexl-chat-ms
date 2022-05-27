@@ -47,6 +47,7 @@ public abstract class ApiException extends RuntimeException {
     public enum Module {
 
         INBOX("100", "Inbox Module Error."),
+        CHALLENGE("101", "Challenge Module Error."),
         ;
 
         /**
