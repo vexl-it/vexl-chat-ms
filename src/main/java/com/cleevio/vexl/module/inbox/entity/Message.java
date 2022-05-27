@@ -9,17 +9,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.HashSet;
-import java.util.Set;
 
 @Table
 @Entity
@@ -29,7 +27,7 @@ import java.util.Set;
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Inbox {
+public class Message {
 
     @Id
     @EqualsAndHashCode.Include
@@ -38,12 +36,16 @@ public class Inbox {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String publicKey; //SHA-256 hash
+    @Column(nullable = false)
+    private String message;
 
     @Column(nullable = false)
-    private String token;
+    private String senderPublicKey;
 
-    @OneToMany(mappedBy = "inbox", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Message> messages = new HashSet<>();
+    @Column(nullable = false)
+    private boolean pulled;
+
+    @JoinColumn(name = "inbox_id", nullable = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private Inbox inbox;
 }

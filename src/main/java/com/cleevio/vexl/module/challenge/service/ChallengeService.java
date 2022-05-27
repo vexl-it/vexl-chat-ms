@@ -6,6 +6,7 @@ import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeCreateException;
 import com.cleevio.vexl.module.challenge.exception.ChallengeMissingException;
+import com.cleevio.vexl.module.inbox.dto.request.MessageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,12 +46,12 @@ public class ChallengeService {
         }
     }
 
-    @Transactional(rollbackFor = Throwable.class)
-    public boolean isSignedChallengeValid(String publicKey, String signature) {
-        Challenge challenge = this.challengeRepository.findByPublicKey(publicKey)
+    @Transactional(rollbackFor = Exception.class)
+    public boolean isSignedChallengeValid(MessageRequest request) {
+        Challenge challenge = this.challengeRepository.findByPublicKey(request.publicKey())
                 .orElseThrow(ChallengeMissingException::new);
 
-        if (challenge.getCreatedAt().plusMinutes(config.expiration()).isAfter(ZonedDateTime.now())) {
+        if (ZonedDateTime.now().isAfter(challenge.getCreatedAt().plusMinutes(config.expiration()))) {
             log.info("Challenge [{}] is expired. Setting to invalid and returning exception.", challenge);
             challenge.setValid(false);
             this.challengeRepository.save(challenge);
@@ -61,7 +62,7 @@ public class ChallengeService {
             challenge.getPublicKey(),
             challenge.getChallenge(),
             challenge.getChallenge().length(),
-            signature
+            request.signature()
         );
     }
 

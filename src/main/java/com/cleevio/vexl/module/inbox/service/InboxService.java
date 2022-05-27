@@ -4,6 +4,7 @@ import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
+import com.cleevio.vexl.module.inbox.exception.InboxNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class InboxService {
     public void createInbox(CreateInboxRequest request) {
         log.info("Creating inbox");
 
-        String publicKeyHash = CLibrary.CRYPTO_LIB.sha256_hash(request.publicKey(), request.publicKey().length());
+        String publicKeyHash = createHash256(request.publicKey());
 
         if (this.inboxRepository.existsByPublicKey(publicKeyHash)) {
             log.warn("Inbox [{}] already exists", publicKeyHash);
@@ -37,5 +38,17 @@ public class InboxService {
                 .publicKey(publicKeyHash)
                 .token(request.token())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Inbox findInbox(String publicKey) {
+        String publicKeyHash = createHash256(publicKey);
+
+        return this.inboxRepository.findByPublicKey(publicKeyHash)
+                .orElseThrow(InboxNotFoundException::new);
+    }
+
+    private String createHash256(String value) {
+        return CLibrary.CRYPTO_LIB.sha256_hash(value, value.length());
     }
 }

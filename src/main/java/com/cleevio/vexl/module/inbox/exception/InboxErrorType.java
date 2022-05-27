@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum InboxErrorType implements ErrorType {
 
     DUPLICATED_PUBLIC_KEY("100", "Public key is already used. You cannot create Inbox again."),
+    INBOX_NOT_FOUND("101", "Inbox with sent public key does not exist. Create the inbox first."),
     ;
 
     /**
