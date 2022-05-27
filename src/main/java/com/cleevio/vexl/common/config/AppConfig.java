@@ -30,10 +30,7 @@ public class AppConfig {
 
     @PostConstruct
     void setTimezoneAndProperty() {
-        TimeZone.setDefault(TimeZone.getTimeZone("utc"));
-        //todo will be environment properties
-        System.setProperty("STREAM_KEY", "p7w5j3pj397s");
-        System.setProperty("STREAM_SECRET", "j9x3w2tv9fn9xax3j6sx3n2fhaawjgj9rnhr2uafaavtszj8fs53v76r2xt4rbxx");
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     @Bean

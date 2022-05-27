@@ -31,16 +31,16 @@ public class SecurityFilter extends OncePerRequestFilter {
         final String requestURI = request.getRequestURI();
 
         String publicKey = request.getHeader("public-key");
-        String phoneHash = request.getHeader("phone-hash");
+        String hash = request.getHeader("hash");
         String signature = request.getHeader("signature");
 
-        if (signature == null || publicKey == null || phoneHash == null || !requestURI.contains("/api/v1/")) {
+        if (signature == null || publicKey == null || hash == null || !requestURI.contains("/api/v1/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            if (signatureService.isSignatureValid(publicKey, phoneHash, signature)) {
+            if (signatureService.isSignatureValid(publicKey, hash, signature)) {
                 AuthenticationHolder authenticationHolder;
 
                 authenticationHolder = new AuthenticationHolder(null, null);
