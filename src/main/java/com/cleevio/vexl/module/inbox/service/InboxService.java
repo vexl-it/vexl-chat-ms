@@ -1,6 +1,5 @@
 package com.cleevio.vexl.module.inbox.service;
 
-import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
