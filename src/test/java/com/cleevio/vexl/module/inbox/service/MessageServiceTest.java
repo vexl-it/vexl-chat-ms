@@ -61,8 +61,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void retrieveMessages_schouldReceiveMessages() {
-        final var messageEvent = ArgumentCaptor.forClass(Message.class);
+    void retrieveMessages_shouldReceiveMessages() {
         List<Message> messages = this.messageService.retrieveMessages(INBOX);
         assertThat(messages).hasSize(3);
         assertThat(messages.get(0).isPulled()).isEqualTo(true);
