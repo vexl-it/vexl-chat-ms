@@ -15,6 +15,6 @@ public class WhitelistMissingException extends ApiException {
 
 	@Override
 	protected ErrorType getErrorType() {
-		return InboxErrorType.MISSING_ON_WHITELIST;
+		return InboxErrorType.BLOCK_EXCEPTION;
 	}
 }

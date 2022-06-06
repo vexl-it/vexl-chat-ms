@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class AllowanceRequestNotAllowedException extends ApiException {
+public class RequestMessagingNotAllowedException extends ApiException {
 
 	@Override
 	protected ApiException.Module getModule() {
@@ -15,6 +15,6 @@ public class AllowanceRequestNotAllowedException extends ApiException {
 
 	@Override
 	protected ErrorType getErrorType() {
-		return InboxErrorType.ALLOWANCE_NOT_ALLOWED;
+		return InboxErrorType.PERMISSION_NOT_ALLOWED;
 	}
 }

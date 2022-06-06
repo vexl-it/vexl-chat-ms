@@ -3,8 +3,8 @@ package com.cleevio.vexl.module.inbox.controller;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.challenge.exception.InvalidChallengeSignature;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
-import com.cleevio.vexl.module.inbox.dto.request.AllowanceConfirmRequest;
-import com.cleevio.vexl.module.inbox.dto.request.AllowanceRequest;
+import com.cleevio.vexl.module.inbox.dto.request.ApprovalConfirmRequest;
+import com.cleevio.vexl.module.inbox.dto.request.ApprovalRequest;
 import com.cleevio.vexl.module.inbox.dto.request.BlockInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.MessageRequest;
@@ -12,6 +12,7 @@ import com.cleevio.vexl.module.inbox.dto.request.SendMessageRequest;
 import com.cleevio.vexl.module.inbox.dto.response.MessageResponse;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
+import com.cleevio.vexl.module.inbox.enums.MessageType;
 import com.cleevio.vexl.module.inbox.mapper.MessageMapper;
 import com.cleevio.vexl.module.inbox.service.InboxService;
 import com.cleevio.vexl.module.inbox.service.MessageService;
@@ -111,44 +112,50 @@ public class InboxController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Send a message to the inbox.",
             description = "When user wants to contact someone, use this EP.")
-    ResponseEntity<Void> sendMessage(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
-                                     @Valid @RequestBody SendMessageRequest request) {
+    ResponseEntity<Void> sendMessage(@Valid @RequestBody SendMessageRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.receiverPublicKey());
-        this.messageService.sendMessageToInbox(publicKeySender, receiverInbox, request.message());
+        this.messageService.sendMessageToInbox(request.senderPublicKey(), receiverInbox, request.message(), request.messageType());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/allowance/request")
+    @PostMapping("/approval/request")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Requesting of an allowance to send messages.",
+    @Operation(summary = "Requesting of a approval to send a message.",
             description = "First of all you have to get to user's whitelist, if you want to send a message someone.")
-    ResponseEntity<Void> sendRequestToAllowance(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
-                                                @Valid @RequestBody AllowanceRequest request) {
+    ResponseEntity<Void> sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
+                                                @Valid @RequestBody ApprovalRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.publicKey());
-        this.messageService.sendRequestToAllowance(publicKeySender, receiverInbox, request.message());
+        this.messageService.sendRequestToPermission(publicKeySender, receiverInbox, request.message());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/allowance/confirm")
+    @PostMapping("/approval/confirm")
     @SecurityRequirements({
             @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Confirm allowance for an user.",
-            description = "You received request for allowance. You can confirm allowance and add user to your whitelist with this EP.")
-    ResponseEntity<Void> confirmAllowance(@Valid @RequestBody AllowanceConfirmRequest request) {
+    @Operation(summary = "Approve request for an user.",
+            description = "You received request for approval to send messages. You can approve/disapprove it and add user to your whitelist with this EP.")
+    ResponseEntity<Void> confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request) {
         if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
             throw new InvalidChallengeSignature();
         }
-        Inbox inbox = this.inboxService.findInbox(request.publicKey());
-        this.whitelistService.putSenderPublicKeyOnWhitelist(inbox, request.publicKeyToConfirm());
+        Inbox requesterInbox = this.inboxService.findInbox(request.publicKeyToConfirm());
+        if (!request.approve()) {
+            this.whitelistService.deleteFromWhiteList(request.publicKeyToConfirm());
+            this.messageService.sendDisapprovalMessage(request.publicKeyToConfirm(), requesterInbox, request.message());
+        } else {
+            Inbox inbox = this.inboxService.findInbox(request.publicKey());
+            this.whitelistService.connectRequesterAndReceiver(inbox, requesterInbox, request.publicKeyToConfirm());
+            this.messageService.sendMessageToInbox(request.publicKeyToConfirm(), requesterInbox, request.message(), MessageType.APPROVE_MESSAGING);
+        }
 
         return ResponseEntity.noContent().build();
     }

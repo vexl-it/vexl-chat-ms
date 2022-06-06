@@ -47,14 +47,14 @@ class InboxServiceTest {
         verify(this.inboxRepository).save(inboxEvent.capture());
         final var inboxResult = inboxEvent.getValue();
         final var publicHashResult = publicHash.getValue();
-        assertThat(inboxResult.getPublicKey()).isEqualTo(PUBLIC_KEY_HASH);
+        assertThat(inboxResult.getPublicKey()).isEqualTo(PUBLIC_KEY);
         assertThat(inboxResult.getToken()).isEqualTo(TOKEN);
-        assertThat(publicHashResult).isEqualTo(PUBLIC_KEY_HASH);
+        assertThat(publicHashResult).isEqualTo(PUBLIC_KEY);
     }
 
     @Test
     void createDuplicateInbox_shouldThrowException() {
-        when(this.inboxRepository.existsByPublicKey(PUBLIC_KEY_HASH)).thenReturn(true);
+        when(this.inboxRepository.existsByPublicKey(PUBLIC_KEY)).thenReturn(true);
 
         assertThrows(
                 DuplicatedPublicKeyException.class,
@@ -64,7 +64,7 @@ class InboxServiceTest {
 
     @Test
     void findInbox_shouldFindInbox() {
-        when(this.inboxRepository.findByPublicKey(PUBLIC_KEY_HASH)).thenReturn(Optional.of(INBOX));
+        when(this.inboxRepository.findByPublicKey(PUBLIC_KEY)).thenReturn(Optional.of(INBOX));
 
         Inbox inbox = this.inboxService.findInbox(PUBLIC_KEY);
         assertThat(inbox.getPublicKey()).isEqualTo(PUBLIC_KEY_HASH);
@@ -73,11 +73,11 @@ class InboxServiceTest {
 
     @Test
     void findInbox_shouldThrowException() {
-        when(this.inboxRepository.findByPublicKey(PUBLIC_KEY_HASH)).thenReturn(Optional.empty());
+        when(this.inboxRepository.findByPublicKey(PUBLIC_KEY)).thenReturn(Optional.empty());
 
         assertThrows(
                 InboxNotFoundException.class,
-                () -> this.inboxService.findInbox(PUBLIC_KEY_HASH)
+                () -> this.inboxService.findInbox(PUBLIC_KEY)
         );
     }
 

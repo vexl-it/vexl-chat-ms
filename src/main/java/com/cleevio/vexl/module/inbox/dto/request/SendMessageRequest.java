@@ -1,13 +1,29 @@
 package com.cleevio.vexl.module.inbox.dto.request;
 
+import com.cleevio.vexl.common.annotation.CheckAllowedMessageType;
+import com.cleevio.vexl.module.inbox.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import javax.validation.constraints.NotBlank;
 
 public record SendMessageRequest(
 
-        @Schema(required = true, description = "Public key of an user or an offer to whom the message is to be sent")
+        @NotBlank
+        @Schema(required = true, description = "Public key of an user of an offer who is sending the message.")
+        String senderPublicKey,
+
+        @NotBlank
+        @Schema(required = true, description = "Public key of an user or an offer to whom the message is to be sent.")
         String receiverPublicKey,
 
-        @Schema(required = true, description = "Message to be sent")
-        String message
+        @NotBlank
+        @Schema(required = true, description = "Message to be sent.")
+        String message,
+
+        @CheckAllowedMessageType
+        @Schema(required = true, description = "Type of message you're sending. Options - MESSAGE, REQUEST_REVEAL, APPROVE_REVEAL, DELETE_CHAT. " +
+                "Types - REQUEST_MESSAGING, APPROVE_MESSAGING and DISAPPROVE_MESSAGING are not possible to send here. " +
+                 "They will be automatically assigned to message sent via permission EPs.")
+        MessageType messageType
 ) {
 }

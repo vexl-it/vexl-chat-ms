@@ -3,7 +3,6 @@ package com.cleevio.vexl.module.inbox.service;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 

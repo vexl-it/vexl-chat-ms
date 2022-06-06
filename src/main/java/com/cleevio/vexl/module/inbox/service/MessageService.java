@@ -2,7 +2,9 @@ package com.cleevio.vexl.module.inbox.service;
 
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
-import com.cleevio.vexl.module.inbox.exception.AllowanceRequestNotAllowedException;
+import com.cleevio.vexl.module.inbox.enums.MessageType;
+import com.cleevio.vexl.module.inbox.enums.WhitelistState;
+import com.cleevio.vexl.module.inbox.exception.RequestMessagingNotAllowedException;
 import com.cleevio.vexl.module.inbox.exception.WhiteListException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.cleevio.vexl.common.service.CryptoService.createHash256;
 
 @Slf4j
 @Service
@@ -44,40 +44,46 @@ public class MessageService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void sendMessageToInbox(String senderPublicKey, Inbox receiverInbox, String message) {
-        String publicKeySenderHash = createHash256(senderPublicKey);
+    public void sendMessageToInbox(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
 
-        if (!this.whitelistService.isSenderInWhitelistNotBlocked(publicKeySenderHash, receiverInbox)) {
-            log.info("Sender [{}] is blocked by receiver [{}]", senderPublicKey, receiverInbox);
+        if (!this.whitelistService.isSenderInWhitelistApproved(senderPublicKey, receiverInbox)) {
+            log.info("Sender [{}] is blocked by receiver [{}] or not approve yet.", senderPublicKey, receiverInbox);
             throw new WhiteListException();
         }
 
-        saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message);
+        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message, messageType);
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void sendRequestToAllowance(String senderPublicKey, Inbox receiverInbox, String message) {
-        if (this.messageRepository.alreadySentRequestAllowence(senderPublicKey, receiverInbox) ||
-                this.whitelistService.isSenderInWhitelistBlocked(createHash256(senderPublicKey), receiverInbox)) {
-            log.warn("Sender [{}] either sent request to allowance already or is blocked by inbox [{}]", senderPublicKey, receiverInbox);
-            throw new AllowanceRequestNotAllowedException();
+    public void sendRequestToPermission(String senderPublicKey, Inbox receiverInbox, String message) {
+        if (this.whitelistService.isSenderInWhitelist(senderPublicKey, receiverInbox)) {
+            log.warn("Sender [{}] has already sent a request for permission to messaging for inbox [{}]", senderPublicKey, receiverInbox);
+            throw new RequestMessagingNotAllowedException();
         }
 
-        saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message);
+        this.whitelistService.createWhiteListEntity(receiverInbox, senderPublicKey, WhitelistState.WAITING);
+
+        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message, MessageType.REQUEST_MESSAGING);
     }
 
-    private void saveMessageToInboxAndSendNotification(String senderPublicKey, Inbox receiverInbox, String message) {
+    @Transactional(rollbackFor = Throwable.class)
+    public void sendDisapprovalMessage(String senderPublicKey, Inbox receiverInbox, String message) {
+        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message, MessageType.DISAPPROVE_MESSAGING);
+    }
 
-        Message messageEntity = createMessageEntity(senderPublicKey, receiverInbox, message);
+    private void saveMessageToInboxAndSendNotification(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
+
+        Message messageEntity = createMessageEntity(senderPublicKey, receiverInbox, message, messageType);
         this.messageRepository.save(messageEntity);
         //todo sent push notification
     }
 
-    private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox, String message) {
+    private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
         return Message.builder()
                 .message(message)
                 .inbox(receiverInbox)
                 .senderPublicKey(senderPublicKey)
+                .type(messageType)
                 .build();
     }
 

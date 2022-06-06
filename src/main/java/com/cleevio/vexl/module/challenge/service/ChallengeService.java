@@ -56,17 +56,12 @@ public class ChallengeService {
             throw new ChallengeMissingException();
         }
 
-        boolean valid = CLibrary.CRYPTO_LIB.ecdsa_verify(
+        return CLibrary.CRYPTO_LIB.ecdsa_verify(
                 challenge.getPublicKey(),
                 challenge.getChallenge(),
                 challenge.getChallenge().length(),
                 signature
         );
-
-        if (valid) {
-            invalidateChallenge(challenge);
-        }
-        return valid;
     }
 
     private void invalidateChallenge(Challenge challenge) {

@@ -16,21 +16,21 @@
     <changeSet id="create_white_list_table" author="David Tilser" runOnChange="true">
         <preConditions onSqlOutput="TEST" onFail="CONTINUE">
             <not>
-                <tableExists tableName="white_list" />
+                <tableExists tableName="white_list"/>
             </not>
         </preConditions>
 
-        <createTable tableName="white_list" >
+        <createTable tableName="white_list">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true" primaryKeyName="PK_WhiteList"/>
             </column>
             <column name="inbox_id" type="bigint">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="public_key" type="varchar">
                 <constraints nullable="false"/>
             </column>
-            <column name="blocked" type="boolean" defaultValue="false">
+            <column name="state" type="varchar">
                 <constraints nullable="false"/>
             </column>
         </createTable>

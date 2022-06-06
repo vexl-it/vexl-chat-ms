@@ -9,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.cleevio.vexl.common.service.CryptoService.createHash256;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,14 +20,12 @@ public class InboxService {
     public void createInbox(CreateInboxRequest request) {
         log.info("Creating inbox");
 
-        String publicKeyHash = createHash256(request.publicKey());
-
-        if (this.inboxRepository.existsByPublicKey(publicKeyHash)) {
-            log.warn("Inbox [{}] already exists", publicKeyHash);
+        if (this.inboxRepository.existsByPublicKey(request.publicKey())) {
+            log.warn("Inbox [{}] already exists", request.publicKey());
             throw new DuplicatedPublicKeyException();
         }
 
-        Inbox inbox = createInboxEntity(request, publicKeyHash);
+        Inbox inbox = createInboxEntity(request, request.publicKey());
         Inbox savedInbox = this.inboxRepository.save(inbox);
         log.info("New inbox has been created with [{}]", savedInbox);
     }
@@ -43,9 +39,7 @@ public class InboxService {
 
     @Transactional(readOnly = true)
     public Inbox findInbox(String publicKey) {
-        String publicKeyHash = createHash256(publicKey);
-
-        return this.inboxRepository.findByPublicKey(publicKeyHash)
+        return this.inboxRepository.findByPublicKey(publicKey)
                 .orElseThrow(InboxNotFoundException::new);
     }
 

@@ -1,5 +1,7 @@
 package com.cleevio.vexl.module.inbox.entity;
 
+import com.cleevio.vexl.common.convertor.Sha256HashConvertor;
+import com.cleevio.vexl.module.inbox.enums.WhitelistState;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +12,10 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -37,10 +42,12 @@ public class Whitelist {
     private Long id;
 
     @Column(nullable = false)
+    @Convert(converter = Sha256HashConvertor.class)
     private String publicKey;
 
     @Column(nullable = false)
-    private boolean blocked;
+    @Enumerated(EnumType.STRING)
+    private WhitelistState state;
 
     @JoinColumn(name = "inbox_id", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)

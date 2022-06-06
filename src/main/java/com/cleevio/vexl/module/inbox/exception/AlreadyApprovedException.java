@@ -2,8 +2,11 @@ package com.cleevio.vexl.module.inbox.exception;
 
 import com.cleevio.vexl.common.exception.ApiException;
 import com.cleevio.vexl.common.exception.ErrorType;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public class WhiteListException extends ApiException {
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public class AlreadyApprovedException extends ApiException {
 
 	@Override
 	protected ApiException.Module getModule() {
@@ -12,6 +15,6 @@ public class WhiteListException extends ApiException {
 
 	@Override
 	protected ErrorType getErrorType() {
-		return InboxErrorType.MISSING_ON_WHITELIST;
+		return InboxErrorType.ALREADY_APPROVED;
 	}
 }

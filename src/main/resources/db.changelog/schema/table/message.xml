@@ -9,6 +9,24 @@
     <!-- ##################################################################### -->
 
     <!-- ################################ V2 ################################# -->
+    <changeSet id="add_column_type" author="David Tilser">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="message"/>
+                <not>
+                    <columnExists tableName="message" columnName="type"/>
+                </not>
+            </and>
+        </preConditions>
+        <addColumn tableName="message">
+            <column name="type" type="varchar"/>
+        </addColumn>
+        <update tableName="message">
+            <column name="type" valueComputed="MESSAGE"/>
+            <where>type IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="message" columnName="type"/>
+    </changeSet>
 
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
@@ -16,16 +34,16 @@
     <changeSet id="create_message_table" author="David Tilser" runOnChange="true">
         <preConditions onSqlOutput="TEST" onFail="CONTINUE">
             <not>
-                <tableExists tableName="message" />
+                <tableExists tableName="message"/>
             </not>
         </preConditions>
 
-        <createTable tableName="message" >
+        <createTable tableName="message">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true" primaryKeyName="PK_Message"/>
             </column>
             <column name="inbox_id" type="bigint">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="message" type="varchar">
                 <constraints nullable="false"/>
@@ -34,6 +52,9 @@
                 <constraints nullable="false"/>
             </column>
             <column name="pulled" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar">
                 <constraints nullable="false"/>
             </column>
         </createTable>

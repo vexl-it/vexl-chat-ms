@@ -13,7 +13,8 @@ public class MessageMapper {
     public MessageResponse mapSingle(Message message) {
         return new MessageResponse(
                 message.getMessage(),
-                message.getSenderPublicKey()
+                message.getSenderPublicKey(),
+                message.getType()
         );
     }
 

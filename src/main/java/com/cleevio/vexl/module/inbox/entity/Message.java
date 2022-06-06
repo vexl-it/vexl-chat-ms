@@ -1,16 +1,17 @@
 package com.cleevio.vexl.module.inbox.entity;
 
-import lombok.AccessLevel;
+import com.cleevio.vexl.module.inbox.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -43,6 +44,10 @@ public class Message {
 
     @Column(nullable = false)
     private boolean pulled;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MessageType type;
 
     @JoinColumn(name = "inbox_id", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)

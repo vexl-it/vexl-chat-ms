@@ -1,4 +1,4 @@
-package com.cleevio.vexl.module.inbox.task;
+package com.cleevio.vexl.module.challenge.task;
 
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
 import lombok.AllArgsConstructor;
