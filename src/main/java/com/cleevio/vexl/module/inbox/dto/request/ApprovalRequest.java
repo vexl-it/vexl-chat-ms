@@ -7,12 +7,11 @@ import javax.validation.constraints.NotBlank;
 public record ApprovalRequest(
 
         @NotBlank
-        @Schema(required = true, description = "Public key of inbox you want to permission from.")
+        @Schema(required = true, description = "Public key of inbox you want to approval from.")
         String publicKey,
 
         @NotBlank
-        @Schema(required = true, description = "BE can't tell what message is what. Please encrypt the message " +
-                "type here so that when you decrypt it, you can tell that it is a permission request.")
+        @Schema(required = true, description = "Approval message for an user.")
         String message
 
 ) {
