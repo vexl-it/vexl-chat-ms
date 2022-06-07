@@ -9,6 +9,15 @@
     <!-- ##################################################################### -->
 
     <!-- ################################ V2 ################################# -->
+    <changeSet id="drop_not_null_constraint" author="David Tilser">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="inbox"/>
+                <columnExists tableName="inbox" columnName="token"/>
+            </and>
+        </preConditions>
+        <dropNotNullConstraint tableName="inbox" columnName="token"/>
+    </changeSet>
 
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
@@ -16,20 +25,18 @@
     <changeSet id="create_inbox_table" author="David Tilser" runOnChange="true">
         <preConditions onSqlOutput="TEST" onFail="CONTINUE">
             <not>
-                <tableExists tableName="inbox" />
+                <tableExists tableName="inbox"/>
             </not>
         </preConditions>
 
-        <createTable tableName="inbox" >
+        <createTable tableName="inbox">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true" primaryKeyName="PK_Inbox"/>
             </column>
             <column name="public_key" type="varchar">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="token" type="varchar">
-                <constraints nullable="false"/>
-            </column>
+            <column name="token" type="varchar"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

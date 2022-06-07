@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.inbox.entity;
 
+import com.cleevio.vexl.common.convertor.AesEncryptionConvertor;
 import com.cleevio.vexl.common.convertor.Sha256HashConvertor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -46,7 +47,7 @@ public class Inbox {
     @Convert(converter = Sha256HashConvertor.class)
     private String publicKey;
 
-    @Column(nullable = false)
+    @Convert(converter = AesEncryptionConvertor.class)
     private String token;
 
     @OneToMany(mappedBy = "inbox", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.inbox.service;
 
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
+import com.cleevio.vexl.module.push.service.PushService;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,10 +21,12 @@ class MessageServiceTest {
 
     private final MessageRepository messageRepository = mock(MessageRepository.class);
     private final WhitelistService whitelistService = mock(WhitelistService.class);
+    private final PushService pushService = mock(PushService.class);
 
     private final MessageService messageService = new MessageService(
             messageRepository,
-            whitelistService
+            whitelistService,
+            pushService
     );
 
     static {

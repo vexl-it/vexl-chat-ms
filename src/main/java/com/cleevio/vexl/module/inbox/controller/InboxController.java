@@ -9,6 +9,8 @@ import com.cleevio.vexl.module.inbox.dto.request.BlockInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.MessageRequest;
 import com.cleevio.vexl.module.inbox.dto.request.SendMessageRequest;
+import com.cleevio.vexl.module.inbox.dto.request.UpdateInboxRequest;
+import com.cleevio.vexl.module.inbox.dto.response.InboxResponse;
 import com.cleevio.vexl.module.inbox.dto.response.MessageResponse;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
@@ -61,6 +63,19 @@ public class InboxController {
     ResponseEntity<Void> createInbox(@Valid @RequestBody CreateInboxRequest request) {
         this.inboxService.createInbox(request);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping
+    @SecurityRequirements({
+            @SecurityRequirement(name = SecurityFilter.HEADER_PUBLIC_KEY),
+            @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
+            @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
+    })
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @Operation(summary = "Update a existing inbox.", description = "You can update only Firebase token.")
+    ResponseEntity<InboxResponse> updateInbox(@Valid @RequestBody UpdateInboxRequest request) {
+        Inbox inbox = this.inboxService.findInbox(request.publicKey());
+        return new ResponseEntity<>(new InboxResponse(this.inboxService.updateInbox(inbox, request.token())), HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/messages")

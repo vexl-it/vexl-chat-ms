@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.inbox.entity;
 
+import com.cleevio.vexl.common.convertor.AesEncryptionConvertor;
 import com.cleevio.vexl.module.inbox.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -40,6 +42,7 @@ public class Message {
     private String message;
 
     @Column(nullable = false)
+    @Convert(converter = AesEncryptionConvertor.class)
     private String senderPublicKey;
 
     @Column(nullable = false)

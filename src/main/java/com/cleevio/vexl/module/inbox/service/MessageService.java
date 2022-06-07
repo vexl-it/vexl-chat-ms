@@ -6,6 +6,7 @@ import com.cleevio.vexl.module.inbox.enums.MessageType;
 import com.cleevio.vexl.module.inbox.enums.WhitelistState;
 import com.cleevio.vexl.module.inbox.exception.RequestMessagingNotAllowedException;
 import com.cleevio.vexl.module.inbox.exception.WhiteListException;
+import com.cleevio.vexl.module.push.service.PushService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final WhitelistService whitelistService;
+    private final PushService pushService;
 
     @Transactional(rollbackFor = Throwable.class)
     public List<Message> retrieveMessages(Inbox inbox) {
@@ -75,7 +77,9 @@ public class MessageService {
 
         Message messageEntity = createMessageEntity(senderPublicKey, receiverInbox, message, messageType);
         this.messageRepository.save(messageEntity);
-        //todo sent push notification
+
+        if (receiverInbox.getToken() == null) return;
+        this.pushService.sendPushNotification(receiverInbox.getToken(), messageType);
     }
 
     private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {

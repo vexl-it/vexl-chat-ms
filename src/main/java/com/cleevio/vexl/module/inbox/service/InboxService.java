@@ -47,4 +47,10 @@ public class InboxService {
     public void deleteInbox(Inbox inbox) {
         this.inboxRepository.delete(inbox);
     }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public Inbox updateInbox(Inbox inbox, String firebaseToken) {
+        inbox.setToken(firebaseToken);
+        return this.inboxRepository.save(inbox);
+    }
 }
