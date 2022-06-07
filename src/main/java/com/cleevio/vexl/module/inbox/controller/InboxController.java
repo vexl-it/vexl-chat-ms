@@ -107,7 +107,7 @@ public class InboxController {
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Block/unblock the public key so he can't send you a messages.")
+    @Operation(summary = "Block/unblock the public key so user can't send you a messages.")
     ResponseEntity<Void> blockInbox(@Valid @RequestBody BlockInboxRequest request) {
         if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
             throw new InvalidChallengeSignature();
@@ -140,7 +140,7 @@ public class InboxController {
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Requesting of a approval to send a message.",
+    @Operation(summary = "Requesting of an approval to send a message.",
             description = "First of all you have to get to user's whitelist, if you want to send a message someone.")
     ResponseEntity<Void> sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
                                                 @Valid @RequestBody ApprovalRequest request) {
