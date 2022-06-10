@@ -11,7 +11,7 @@ import com.cleevio.vexl.module.inbox.dto.request.MessageRequest;
 import com.cleevio.vexl.module.inbox.dto.request.SendMessageRequest;
 import com.cleevio.vexl.module.inbox.dto.request.UpdateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.response.InboxResponse;
-import com.cleevio.vexl.module.inbox.dto.response.MessageResponse;
+import com.cleevio.vexl.module.inbox.dto.response.MessagesResponse;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
 import com.cleevio.vexl.module.inbox.enums.MessageType;
@@ -90,14 +90,14 @@ public class InboxController {
             Signature in the request params is to verify that the client owns the private key to the public key that he claims is his.\040
             First you need to retrieve challenge for verification in challenge API. Then sign it with private key and the signature send here.
             """)
-    List<MessageResponse> retrieveMessages(@Valid @RequestBody MessageRequest request) {
+    MessagesResponse retrieveMessages(@Valid @RequestBody MessageRequest request) {
         if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
             throw new InvalidChallengeSignature();
         }
 
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         List<Message> messages = this.messageService.retrieveMessages(inbox);
-        return messageMapper.mapList(messages);
+        return new MessagesResponse(messageMapper.mapList(messages));
     }
 
     @PutMapping("/block")
