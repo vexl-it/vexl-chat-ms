@@ -11,6 +11,7 @@ RUN echo "\
 java \
 -Dserver.use-forward-headers=true \
 -Dspring.profiles.active=dev \
+-Dsentry.release=$CI_COMMIT_SHORT_SHA \
 -Dspringdoc.swagger-server=https://$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA.$KUBE_DOMAIN \
 -jar /application.jar \
 " > /run.sh
