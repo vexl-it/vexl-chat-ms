@@ -1,10 +1,13 @@
 package com.cleevio.vexl.common.convertor;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 import static com.cleevio.vexl.common.service.CryptoService.createSha256Hash;
 
+@Slf4j
 @Converter
 public class Sha256HashConvertor implements AttributeConverter<String, String> {
 
@@ -16,12 +19,16 @@ public class Sha256HashConvertor implements AttributeConverter<String, String> {
 
     @Override
     public String convertToDatabaseColumn(String publicKey) {
+        log.info("Converting publicKey to database {}", publicKey);
 
         if (publicKey.length() == LENGTH) {
+            log.info("No need to convert");
             return publicKey;
         }
 
-        return createSha256Hash(publicKey);
+        String sha256Hash = createSha256Hash(publicKey);
+        log.info("Public key [{}] has been converted to [{}]", publicKey, sha256Hash);
+        return sha256Hash;
     }
 
     @Override

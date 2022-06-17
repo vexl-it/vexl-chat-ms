@@ -39,6 +39,7 @@ public class InboxService {
 
     @Transactional(readOnly = true)
     public Inbox findInbox(String publicKey) {
+        log.info("Looking for inbox [{}]", publicKey);
         return this.inboxRepository.findByPublicKey(publicKey)
                 .orElseThrow(InboxNotFoundException::new);
     }
