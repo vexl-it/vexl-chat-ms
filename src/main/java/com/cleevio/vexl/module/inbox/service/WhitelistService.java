@@ -32,6 +32,8 @@ public class WhitelistService {
         Whitelist whitelist = this.findWaitingWhitelistByPublicKey(publicKeyToConfirm);
 
         whitelist.setState(WhitelistState.APPROVED);
+        this.whitelistRepository.save(whitelist);
+
         createWhiteListEntity(requesterInbox, inbox.getPublicKey(), WhitelistState.APPROVED);
         log.info("New public key [{}] was successfully saved into whitelist for inbox [{}]", publicKeyToConfirm, inbox);
     }
