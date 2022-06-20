@@ -163,13 +163,13 @@ public class InboxController {
             throw new InvalidChallengeSignature();
         }
         Inbox requesterInbox = this.inboxService.findInbox(request.publicKeyToConfirm());
+        Inbox inbox = this.inboxService.findInbox(request.publicKey());
         if (!request.approve()) {
-            this.whitelistService.deleteFromWhiteList(request.publicKeyToConfirm());
-            this.messageService.sendDisapprovalMessage(request.publicKeyToConfirm(), requesterInbox, request.message());
+            this.whitelistService.deleteFromWhiteList(inbox, request.publicKeyToConfirm());
+            this.messageService.sendDisapprovalMessage(inbox.getPublicKey(), requesterInbox, request.message());
         } else {
-            Inbox inbox = this.inboxService.findInbox(request.publicKey());
             this.whitelistService.connectRequesterAndReceiver(inbox, requesterInbox, request.publicKeyToConfirm());
-            this.messageService.sendMessageToInbox(request.publicKeyToConfirm(), requesterInbox, request.message(), MessageType.APPROVE_MESSAGING);
+            this.messageService.sendMessageToInbox(inbox.getPublicKey(), requesterInbox, request.message(), MessageType.APPROVE_MESSAGING);
         }
 
         return ResponseEntity.noContent().build();

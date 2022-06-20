@@ -21,7 +21,7 @@ interface WhitelistRepository extends JpaRepository<Whitelist, Long>, JpaSpecifi
     @Query("select w from Whitelist w where w.inbox = :inbox and w.publicKey = :publicKeyToBlockHash")
     Optional<Whitelist> findOnWhitelist(Inbox inbox, String publicKeyToBlockHash);
 
-    @Query("select w from Whitelist w where w.publicKey = :publicKey and w.state = :state")
-    Optional<Whitelist> findByPublicKey(String publicKey, WhitelistState state);
+    @Query("select w from Whitelist w where w.inbox = :inbox and w.publicKey = :publicKey and w.state = :state")
+    Optional<Whitelist> findByPublicKey(Inbox inbox, String publicKey, WhitelistState state);
 
 }

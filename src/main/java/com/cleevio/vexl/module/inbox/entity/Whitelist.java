@@ -37,7 +37,6 @@ public class Whitelist {
     @Id
     @EqualsAndHashCode.Include
     @ToString.Include
-    @Getter(value = AccessLevel.PRIVATE)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

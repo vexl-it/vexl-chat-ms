@@ -29,7 +29,7 @@ public class WhitelistService {
 
     @Transactional(rollbackFor = Throwable.class)
     public void connectRequesterAndReceiver(Inbox inbox, Inbox requesterInbox, String publicKeyToConfirm) {
-        Whitelist whitelist = this.findWaitingWhitelistByPublicKey(publicKeyToConfirm);
+        Whitelist whitelist = this.findWaitingWhitelistByInboxAndPublicKey(inbox, publicKeyToConfirm);
 
         whitelist.setState(WhitelistState.APPROVED);
         this.whitelistRepository.save(whitelist);
@@ -39,9 +39,9 @@ public class WhitelistService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void createWhiteListEntity(Inbox inbox, String publicKeyHash, WhitelistState state) {
+    public void createWhiteListEntity(Inbox inbox, String publicKey, WhitelistState state) {
         Whitelist whitelist = Whitelist.builder()
-                .publicKey(publicKeyHash)
+                .publicKey(publicKey)
                 .state(state)
                 .inbox(inbox)
                 .build();
@@ -59,12 +59,12 @@ public class WhitelistService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void deleteFromWhiteList(String publicKey) {
-        this.whitelistRepository.delete(this.findWaitingWhitelistByPublicKey(publicKey));
+    public void deleteFromWhiteList(Inbox inbox, String publicKey) {
+        this.whitelistRepository.delete(this.findWaitingWhitelistByInboxAndPublicKey(inbox, publicKey));
     }
 
-    private Whitelist findWaitingWhitelistByPublicKey(String publicKey) {
-        return this.whitelistRepository.findByPublicKey(publicKey, WhitelistState.WAITING)
+    private Whitelist findWaitingWhitelistByInboxAndPublicKey(Inbox inbox, String publicKey) {
+        return this.whitelistRepository.findByPublicKey(inbox, publicKey, WhitelistState.WAITING)
                 .orElseThrow(AlreadyApprovedException::new);
     }
 }

@@ -19,15 +19,15 @@ public class Sha256HashConvertor implements AttributeConverter<String, String> {
 
     @Override
     public String convertToDatabaseColumn(String publicKey) {
-        log.info("Converting publicKey to database {}", publicKey);
+        log.debug("Converting publicKey to database {}", publicKey);
 
         if (publicKey.length() == LENGTH) {
-            log.info("No need to convert");
+            log.debug("No need to convert");
             return publicKey;
         }
 
         String sha256Hash = createSha256Hash(publicKey);
-        log.info("Public key [{}] has been converted to [{}]", publicKey, sha256Hash);
+        log.debug("Public key [{}] has been converted to [{}]", publicKey, sha256Hash);
         return sha256Hash;
     }
 
