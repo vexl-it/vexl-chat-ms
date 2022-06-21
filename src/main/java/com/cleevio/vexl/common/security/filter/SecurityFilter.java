@@ -54,7 +54,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             } else {
                 SecurityContextHolder.clearContext();
             }
-        } catch (DigitalSignatureException e) {
+        } catch (Exception e) {
             SecurityContextHolder.clearContext();
             handleError(response, "Signature verification failed: " + e.getMessage(), 400);
         }

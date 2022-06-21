@@ -1,17 +1,18 @@
 package com.cleevio.vexl.common.convertor;
 
+import com.cleevio.vexl.common.config.SecretKeyConfig;
 import com.cleevio.vexl.common.cryptolib.CLibrary;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 @Converter
+@RequiredArgsConstructor
 public class AesEncryptionConvertor implements AttributeConverter<String, String> {
 
-    @Value("${security.aes.key}")
-    protected String key;
+    private final SecretKeyConfig secretKeyConfig;
 
     @Nullable
     @Override
@@ -19,7 +20,7 @@ public class AesEncryptionConvertor implements AttributeConverter<String, String
         if (value == null) {
             return null;
         }
-        return CLibrary.CRYPTO_LIB.aes_encrypt(key, value);
+        return CLibrary.CRYPTO_LIB.aes_encrypt(secretKeyConfig.aesKey(), value);
     }
 
     @Nullable
@@ -28,6 +29,6 @@ public class AesEncryptionConvertor implements AttributeConverter<String, String
         if (value == null) {
             return null;
         }
-        return CLibrary.CRYPTO_LIB.aes_decrypt(key, value);
+        return CLibrary.CRYPTO_LIB.aes_decrypt(secretKeyConfig.aesKey(), value);
     }
 }

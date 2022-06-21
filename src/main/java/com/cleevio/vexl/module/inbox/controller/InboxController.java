@@ -143,7 +143,7 @@ public class InboxController {
     @Operation(summary = "Requesting of an approval to send a message.",
             description = "First of all you have to get to user's whitelist, if you want to send a message someone.")
     ResponseEntity<Void> sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
-                                                @Valid @RequestBody ApprovalRequest request) {
+                                                 @Valid @RequestBody ApprovalRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.publicKey());
         this.messageService.sendRequestToPermission(publicKeySender, receiverInbox, request.message());
         return ResponseEntity.noContent().build();
