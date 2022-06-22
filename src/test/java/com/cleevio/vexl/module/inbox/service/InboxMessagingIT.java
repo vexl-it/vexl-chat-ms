@@ -151,9 +151,9 @@ class InboxMessagingIT {
 
         //get sender public key - sender = requester in this case
         List<Message> messages = this.messageRepository.findAll();
-        String senderPublicKey = messages.get(0).getSenderPublicKey();
+        String publicKeyToConfirm = messages.get(0).getSenderPublicKey();
 
-        this.whitelistService.connectRequesterAndReceiver(confirmer, requester, senderPublicKey);
+        this.whitelistService.connectRequesterAndReceiver(confirmer, requester, PUBLIC_KEY_USER_A, publicKeyToConfirm);
         this.messageService.sendMessageToInbox(confirmer.getPublicKey(), requester, CONFIRMATION_MESSAGE, MessageType.APPROVE_MESSAGING);
 
         List<Whitelist> whitelistAll = this.whitelistRepository.findAll().stream()
@@ -168,7 +168,7 @@ class InboxMessagingIT {
         assertThat(messagesAll).hasSize(2);
 
         assertThat(messagesAll.get(0).getMessage()).isEqualTo(REQUEST_APPROVAL_MESSAGE);
-        assertThat(messagesAll.get(0).getSenderPublicKey()).isEqualTo(senderPublicKey);
+        assertThat(messagesAll.get(0).getSenderPublicKey()).isEqualTo(publicKeyToConfirm);
         assertThat(messagesAll.get(1).getMessage()).isEqualTo(CONFIRMATION_MESSAGE);
         assertThat(messagesAll.get(1).getType()).isEqualTo(MessageType.APPROVE_MESSAGING);
         assertThat(messagesAll.get(1).getSenderPublicKey()).isEqualTo(PUBLIC_KEY_USER_A);
@@ -196,14 +196,14 @@ class InboxMessagingIT {
 
         //get sender public key - sender = requester in this case
         List<Message> messages = this.messageRepository.findAll();
-        String senderPublicKey = messages.get(0).getSenderPublicKey();
+        String publicKeyToConfirm = messages.get(0).getSenderPublicKey();
 
-        this.whitelistService.connectRequesterAndReceiver(confirmer, requester, senderPublicKey);
+        this.whitelistService.connectRequesterAndReceiver(confirmer, requester, PUBLIC_KEY_USER_A, publicKeyToConfirm);
         this.messageService.sendMessageToInbox(confirmer.getPublicKey(), requester, CONFIRMATION_MESSAGE, MessageType.APPROVE_MESSAGING);
 
         assertThrows(
                 AlreadyApprovedException.class,
-                () -> this.whitelistService.connectRequesterAndReceiver(confirmer, requester, senderPublicKey)
+                () -> this.whitelistService.connectRequesterAndReceiver(confirmer, requester, PUBLIC_KEY_USER_A, publicKeyToConfirm)
         );
     }
 }

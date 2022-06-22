@@ -28,13 +28,13 @@ public class WhitelistService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void connectRequesterAndReceiver(Inbox inbox, Inbox requesterInbox, String publicKeyToConfirm) {
+    public void connectRequesterAndReceiver(Inbox inbox, Inbox requesterInbox, String senderPublicKey, String publicKeyToConfirm) {
         Whitelist whitelist = this.findWaitingWhitelistByInboxAndPublicKey(inbox, publicKeyToConfirm);
 
         whitelist.setState(WhitelistState.APPROVED);
         this.whitelistRepository.save(whitelist);
 
-        createWhiteListEntity(requesterInbox, inbox.getPublicKey(), WhitelistState.APPROVED);
+        createWhiteListEntity(requesterInbox, senderPublicKey, WhitelistState.APPROVED);
         log.info("New public key [{}] was successfully saved into whitelist for inbox [{}]", publicKeyToConfirm, inbox);
     }
 
