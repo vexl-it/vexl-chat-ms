@@ -1,4 +1,5 @@
-package com.cleevio.vexl.integration.firebase.service;
+package com.cleevio.vexl.module.push.service;
+
 
 public interface NotificationService {
 

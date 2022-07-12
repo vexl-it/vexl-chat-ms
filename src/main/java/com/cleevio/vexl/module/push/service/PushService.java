@@ -1,12 +1,9 @@
 package com.cleevio.vexl.module.push.service;
 
-import com.cleevio.vexl.integration.firebase.service.NotificationService;
 import com.cleevio.vexl.module.inbox.enums.MessageType;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PushService {
