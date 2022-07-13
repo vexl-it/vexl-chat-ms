@@ -27,23 +27,24 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class InboxMessagingIT {
 
-    @Autowired
-    private InboxService inboxService;
+    private final InboxService inboxService;
+    private final WhitelistService whitelistService;
+    private final MessageService messageService;
+    private final InboxRepository inboxRepository;
+    private final WhitelistRepository whitelistRepository;
+    private final MessageRepository messageRepository;
 
     @Autowired
-    private WhitelistService whitelistService;
-
-    @Autowired
-    private MessageService messageService;
-
-    @Autowired
-    private InboxRepository inboxRepository;
-
-    @Autowired
-    private WhitelistRepository whitelistRepository;
-
-    @Autowired
-    private MessageRepository messageRepository;
+    public InboxMessagingIT(InboxService inboxService, WhitelistService whitelistService,
+                            MessageService messageService, InboxRepository inboxRepository,
+                            WhitelistRepository whitelistRepository, MessageRepository messageRepository) {
+        this.inboxService = inboxService;
+        this.whitelistService = whitelistService;
+        this.messageService = messageService;
+        this.inboxRepository = inboxRepository;
+        this.whitelistRepository = whitelistRepository;
+        this.messageRepository = messageRepository;
+    }
 
     private static final String REQUEST_APPROVAL_MESSAGE = "dummy_approval_request";
     private static final String CONFIRMATION_MESSAGE = "dummy_confirmation";

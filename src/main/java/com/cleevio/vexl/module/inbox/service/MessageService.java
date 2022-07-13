@@ -4,11 +4,12 @@ import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
 import com.cleevio.vexl.module.inbox.enums.MessageType;
 import com.cleevio.vexl.module.inbox.enums.WhitelistState;
+import com.cleevio.vexl.module.inbox.event.PushNotificationEvent;
 import com.cleevio.vexl.module.inbox.exception.RequestMessagingNotAllowedException;
 import com.cleevio.vexl.module.inbox.exception.WhiteListException;
-import com.cleevio.vexl.module.push.service.PushService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final WhitelistService whitelistService;
-    private final PushService pushService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional(rollbackFor = Throwable.class)
     public List<Message> retrieveMessages(Inbox inbox) {
@@ -75,11 +76,11 @@ public class MessageService {
 
     private void saveMessageToInboxAndSendNotification(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
 
-        Message messageEntity = createMessageEntity(senderPublicKey, receiverInbox, message, messageType);
+        final Message messageEntity = createMessageEntity(senderPublicKey, receiverInbox, message, messageType);
         this.messageRepository.save(messageEntity);
 
         if (receiverInbox.getToken() == null) return;
-        this.pushService.sendPushNotification(receiverInbox.getToken(), messageType);
+        this.applicationEventPublisher.publishEvent(new PushNotificationEvent(receiverInbox.getToken(), messageType, receiverInbox.getPublicKey()));
     }
 
     private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {

@@ -16,8 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ChallengeServiceIT {
 
+    private final ChallengeService challengeService;
+
     @Autowired
-    private ChallengeService challengeService;
+    public ChallengeServiceIT(ChallengeService challengeService) {
+        this.challengeService = challengeService;
+    }
 
     private static final String PUBLIC_KEY_USER_A = CryptographyTestKeysUtil.PUBLIC_KEY_USER_A;
     private static final String PRIVATE_KEY_USER_A = CryptographyTestKeysUtil.PRIVATE_KEY_USER_A;
@@ -25,38 +29,38 @@ class ChallengeServiceIT {
 
     @Test
     void testSigningChallenge_shouldSignAndBeSuccessfullyVerified() {
-        String challenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
-        String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challenge, challenge.length());
-        boolean signedChallengeValid = this.challengeService.isSignedChallengeValid(PUBLIC_KEY_USER_A, signature);
+        final String challenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
+        final String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challenge, challenge.length());
+        final boolean signedChallengeValid = this.challengeService.isSignedChallengeValid(PUBLIC_KEY_USER_A, signature);
 
         assertThat(signedChallengeValid).isTrue();
     }
 
     @Test
     void testSigningOldChallenge_shouldNotBeValid() {
-        String oldChallenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
-        String newChallenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
-        String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, oldChallenge, oldChallenge.length());
-        boolean signedChallengeValid = this.challengeService.isSignedChallengeValid(PUBLIC_KEY_USER_A, signature);
+        final String oldChallenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
+        final String newChallenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
+        final String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, oldChallenge, oldChallenge.length());
+        final boolean signedChallengeValid = this.challengeService.isSignedChallengeValid(PUBLIC_KEY_USER_A, signature);
 
         assertThat(signedChallengeValid).isFalse();
     }
 
     @Test
     void testSigningNewChallenge_shouldBeValid() {
-        String oldChallenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
-        String newChallenge1 = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
-        String newChallenge2 = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
-        String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, newChallenge2, newChallenge2.length());
-        boolean signedChallengeValid = this.challengeService.isSignedChallengeValid(PUBLIC_KEY_USER_A, signature);
+        final String oldChallenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
+        final String newChallenge1 = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
+        final String newChallenge2 = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PUBLIC_KEY_USER_A));
+        final String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, newChallenge2, newChallenge2.length());
+        final boolean signedChallengeValid = this.challengeService.isSignedChallengeValid(PUBLIC_KEY_USER_A, signature);
 
         assertThat(signedChallengeValid).isTrue();
     }
 
     @Test
     void testSigningChallengeForDifferentPublicKey_shouldReturnException() {
-        String challenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PRIVATE_KEY_USER_B));
-        String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challenge, challenge.length());
+        final String challenge = this.challengeService.createChallenge(RequestCreatorTestUtil.createChallengeRequest(PRIVATE_KEY_USER_B));
+        final String signature = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challenge, challenge.length());
 
         assertThrows(
                 ChallengeMissingException.class,
