@@ -47,18 +47,18 @@ public class MessageService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void sendMessageToInbox(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
+    public void sendMessageToInbox(String senderPublicKey, String receiverPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
 
         if (!this.whitelistService.isSenderInWhitelistApproved(senderPublicKey, receiverInbox)) {
             log.info("Sender [{}] is blocked by receiver [{}] or not approve yet.", senderPublicKey, receiverInbox);
             throw new WhiteListException();
         }
 
-        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message, messageType);
+        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, messageType);
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void sendRequestToPermission(String senderPublicKey, Inbox receiverInbox, String message) {
+    public void sendRequestToPermission(String senderPublicKey, String receiverPublicKey, Inbox receiverInbox, String message) {
         if (this.whitelistService.isSenderInWhitelist(senderPublicKey, receiverInbox)) {
             log.warn("Sender [{}] has already sent a request for permission to messaging for inbox [{}]", senderPublicKey, receiverInbox);
             throw new RequestMessagingNotAllowedException();
@@ -66,21 +66,21 @@ public class MessageService {
 
         this.whitelistService.createWhiteListEntity(receiverInbox, senderPublicKey, WhitelistState.WAITING);
 
-        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message, MessageType.REQUEST_MESSAGING);
+        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.REQUEST_MESSAGING);
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public void sendDisapprovalMessage(String senderPublicKey, Inbox receiverInbox, String message) {
-        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverInbox, message, MessageType.DISAPPROVE_MESSAGING);
+    public void sendDisapprovalMessage(String senderPublicKey, String receiverPublicKey,  Inbox receiverInbox, String message) {
+        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.DISAPPROVE_MESSAGING);
     }
 
-    private void saveMessageToInboxAndSendNotification(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
+    private void saveMessageToInboxAndSendNotification(String senderPublicKey, String receiverPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
 
         final Message messageEntity = createMessageEntity(senderPublicKey, receiverInbox, message, messageType);
         this.messageRepository.save(messageEntity);
 
         if (receiverInbox.getToken() == null) return;
-        this.applicationEventPublisher.publishEvent(new PushNotificationEvent(receiverInbox.getToken(), messageType, receiverInbox.getPublicKey()));
+        this.applicationEventPublisher.publishEvent(new PushNotificationEvent(receiverInbox.getToken(), messageType, receiverPublicKey));
     }
 
     private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {

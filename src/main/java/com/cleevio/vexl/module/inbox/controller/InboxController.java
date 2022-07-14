@@ -128,7 +128,7 @@ public class InboxController {
             description = "When user wants to contact someone, use this EP.")
     ResponseEntity<Void> sendMessage(@Valid @RequestBody SendMessageRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.receiverPublicKey());
-        this.messageService.sendMessageToInbox(request.senderPublicKey(), receiverInbox, request.message(), request.messageType());
+        this.messageService.sendMessageToInbox(request.senderPublicKey(), request.receiverPublicKey(), receiverInbox, request.message(), request.messageType());
         return ResponseEntity.noContent().build();
     }
 
@@ -144,7 +144,7 @@ public class InboxController {
     ResponseEntity<Void> sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
                                                  @Valid @RequestBody ApprovalRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.publicKey());
-        this.messageService.sendRequestToPermission(publicKeySender, receiverInbox, request.message());
+        this.messageService.sendRequestToPermission(publicKeySender, request.publicKey(), receiverInbox, request.message());
         return ResponseEntity.noContent().build();
     }
 
@@ -165,10 +165,10 @@ public class InboxController {
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         if (!request.approve()) {
             this.whitelistService.deleteFromWhiteList(inbox, request.publicKeyToConfirm());
-            this.messageService.sendDisapprovalMessage(request.publicKey(), requesterInbox, request.message());
+            this.messageService.sendDisapprovalMessage(request.publicKey(), request.publicKeyToConfirm(), requesterInbox, request.message());
         } else {
             this.whitelistService.connectRequesterAndReceiver(inbox, requesterInbox, request.publicKey(), request.publicKeyToConfirm());
-            this.messageService.sendMessageToInbox(request.publicKey(), requesterInbox, request.message(), MessageType.APPROVE_MESSAGING);
+            this.messageService.sendMessageToInbox(request.publicKey(), request.publicKeyToConfirm(), requesterInbox, request.message(), MessageType.APPROVE_MESSAGING);
         }
 
         return ResponseEntity.noContent().build();

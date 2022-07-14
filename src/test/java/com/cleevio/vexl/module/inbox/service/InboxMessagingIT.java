@@ -94,7 +94,7 @@ class InboxMessagingIT {
         final Inbox inboxToWhichRequestIsSent = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
 
         //sending approval request
-        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_A, inboxToWhichRequestIsSent, REQUEST_APPROVAL_MESSAGE);
+        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_A, PUBLIC_KEY_USER_B, inboxToWhichRequestIsSent, REQUEST_APPROVAL_MESSAGE);
 
         List<Message> messages = this.messageRepository.findAll();
 
@@ -127,11 +127,11 @@ class InboxMessagingIT {
         final Inbox inboxToWhichRequestIsSent = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
 
         //sending approval request
-        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_A, inboxToWhichRequestIsSent, REQUEST_APPROVAL_MESSAGE);
+        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_A, PUBLIC_KEY_USER_B, inboxToWhichRequestIsSent, REQUEST_APPROVAL_MESSAGE);
 
         assertThrows(
                 RequestMessagingNotAllowedException.class,
-                () -> messageService.sendRequestToPermission(PUBLIC_KEY_USER_A, inboxToWhichRequestIsSent, REQUEST_APPROVAL_MESSAGE)
+                () -> messageService.sendRequestToPermission(PUBLIC_KEY_USER_A, PUBLIC_KEY_USER_B, inboxToWhichRequestIsSent, REQUEST_APPROVAL_MESSAGE)
         );
     }
 
@@ -148,14 +148,14 @@ class InboxMessagingIT {
         final Inbox requester = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
 
         //sending approval request
-        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_B, confirmer, REQUEST_APPROVAL_MESSAGE);
+        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_B, PUBLIC_KEY_USER_A, confirmer, REQUEST_APPROVAL_MESSAGE);
 
         //get sender public key - sender = requester in this case
         List<Message> messages = this.messageRepository.findAll();
         String publicKeyToConfirm = messages.get(0).getSenderPublicKey();
 
         this.whitelistService.connectRequesterAndReceiver(confirmer, requester, PUBLIC_KEY_USER_A, publicKeyToConfirm);
-        this.messageService.sendMessageToInbox(confirmer.getPublicKey(), requester, CONFIRMATION_MESSAGE, MessageType.APPROVE_MESSAGING);
+        this.messageService.sendMessageToInbox(confirmer.getPublicKey(), PUBLIC_KEY_USER_B, requester, CONFIRMATION_MESSAGE, MessageType.APPROVE_MESSAGING);
 
         List<Whitelist> whitelistAll = this.whitelistRepository.findAll().stream()
                 .sorted(Comparator.comparing(Whitelist::getId))
@@ -193,14 +193,14 @@ class InboxMessagingIT {
         final Inbox requester = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
 
         //sending approval request
-        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_B, confirmer, REQUEST_APPROVAL_MESSAGE);
+        this.messageService.sendRequestToPermission(PUBLIC_KEY_USER_B, PUBLIC_KEY_USER_A, confirmer, REQUEST_APPROVAL_MESSAGE);
 
         //get sender public key - sender = requester in this case
         List<Message> messages = this.messageRepository.findAll();
         String publicKeyToConfirm = messages.get(0).getSenderPublicKey();
 
         this.whitelistService.connectRequesterAndReceiver(confirmer, requester, PUBLIC_KEY_USER_A, publicKeyToConfirm);
-        this.messageService.sendMessageToInbox(confirmer.getPublicKey(), requester, CONFIRMATION_MESSAGE, MessageType.APPROVE_MESSAGING);
+        this.messageService.sendMessageToInbox(confirmer.getPublicKey(), PUBLIC_KEY_USER_B, requester, CONFIRMATION_MESSAGE, MessageType.APPROVE_MESSAGING);
 
         assertThrows(
                 AlreadyApprovedException.class,
