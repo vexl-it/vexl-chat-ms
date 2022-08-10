@@ -80,7 +80,7 @@ public class MessageService {
         this.messageRepository.save(messageEntity);
 
         if (receiverInbox.getToken() == null) return;
-        this.applicationEventPublisher.publishEvent(new PushNotificationEvent(receiverInbox.getToken(), messageType, receiverPublicKey));
+        this.applicationEventPublisher.publishEvent(new PushNotificationEvent(receiverInbox.getToken(), messageType, receiverPublicKey, senderPublicKey));
     }
 
     private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {

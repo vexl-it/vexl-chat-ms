@@ -16,6 +16,7 @@ public class FirebaseService implements NotificationService {
     private static final String BODY = "body";
     private static final String TYPE = "type";
     private static final String INBOX = "inbox";
+    private static final String SENDER = "sender";
 
     public void sendPushNotification(final PushNotificationEvent event, final String title, final String text) {
         try {
@@ -26,7 +27,8 @@ public class FirebaseService implements NotificationService {
             messageBuilder.putData(TITLE, title);
             messageBuilder.putData(BODY, text);
             messageBuilder.putData(TYPE, event.messageType().name());
-            messageBuilder.putData(INBOX, event.publicKey());
+            messageBuilder.putData(INBOX, event.receiverPublicKey());
+            messageBuilder.putData(SENDER, event.senderPublicKey());
 
             final String response = FirebaseMessaging.getInstance().sendAsync(messageBuilder.build()).get();
             log.info("Sent message: " + response);

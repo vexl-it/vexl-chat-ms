@@ -13,7 +13,10 @@ public record PushNotificationEvent(
         MessageType messageType,
 
         @NotBlank
-        String publicKey
+        String receiverPublicKey,
+
+        @NotBlank
+        String senderPublicKey
 
 ) {
 }
