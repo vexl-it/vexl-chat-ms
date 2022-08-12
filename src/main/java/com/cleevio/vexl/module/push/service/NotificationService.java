@@ -1,8 +1,8 @@
 package com.cleevio.vexl.module.push.service;
 
-import com.cleevio.vexl.module.inbox.event.PushNotificationEvent;
+import com.cleevio.vexl.module.push.dto.PushMessageDto;
 
 public interface NotificationService {
 
-    void sendPushNotification(PushNotificationEvent event, String title, String text);
+    void sendPushNotification(PushMessageDto event);
 }

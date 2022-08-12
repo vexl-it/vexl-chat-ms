@@ -4,6 +4,7 @@ import com.cleevio.vexl.common.dto.ErrorResponse;
 import com.cleevio.vexl.common.exception.DigitalSignatureException;
 import com.cleevio.vexl.common.security.AuthenticationHolder;
 import com.cleevio.vexl.common.service.SignatureService;
+import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -34,9 +35,9 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String requestURI = request.getRequestURI();
 
-        String publicKey = request.getHeader(HEADER_PUBLIC_KEY);
-        String hash = request.getHeader(HEADER_HASH);
-        String signature = request.getHeader(HEADER_SIGNATURE);
+        final String publicKey = request.getHeader(HEADER_PUBLIC_KEY);
+        final String hash = request.getHeader(HEADER_HASH);
+        final String signature = request.getHeader(HEADER_SIGNATURE);
 
         if (signature == null || publicKey == null || hash == null || !requestURI.contains("/api/v1/")) {
             filterChain.doFilter(request, response);
@@ -44,7 +45,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
 
         try {
-            if (signatureService.isSignatureValid(publicKey, hash, signature)) {
+            if (signatureService.isSignatureValid(new CheckSignatureValidityQuery(publicKey, hash, signature))) {
                 AuthenticationHolder authenticationHolder;
 
                 authenticationHolder = new AuthenticationHolder(null, null);

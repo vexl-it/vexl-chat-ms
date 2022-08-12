@@ -21,7 +21,7 @@ public record BlockInboxRequest(
 
         @NotNull
         @Schema(required = true, description = "Whether you block (true) or unblock (false) the public key.")
-        boolean block
+        Boolean block
 
 ) {
 }

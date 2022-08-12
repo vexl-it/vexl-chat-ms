@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.inbox.service;
 
+import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
@@ -24,8 +25,14 @@ class InboxServiceTest {
     private static final Inbox INBOX;
 
     private final InboxRepository inboxRepository = mock(InboxRepository.class);
+    private final MessageService messageService = mock(MessageService.class);
+    private final AdvisoryLockService advisoryLockService = mock(AdvisoryLockService.class);
 
-    private final InboxService inboxService = new InboxService(inboxRepository);
+    private final InboxService inboxService = new InboxService(
+            inboxRepository,
+            messageService,
+            advisoryLockService
+    );
 
     static {
         PUBLIC_KEY_HASH = "3Qf0lOb0FaWDXU59xGNa/4pv0s9kKxbbnNIYXBNxUUQ=";

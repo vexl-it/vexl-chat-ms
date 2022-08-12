@@ -25,7 +25,7 @@ public record ApprovalConfirmRequest(
 
         @NotNull
         @Schema(required = true, description = "If you want to approve user, send 'true'. If you want to disapprove user, send 'false'")
-        boolean approve
+        Boolean approve
 
 ) {
 }

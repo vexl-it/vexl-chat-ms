@@ -1,6 +1,11 @@
 package com.cleevio.vexl.module.inbox.service;
 
+import com.cleevio.vexl.common.constant.ModuleLockNamespace;
+import com.cleevio.vexl.common.service.AdvisoryLockService;
+import com.cleevio.vexl.module.inbox.constant.InboxAdvisoryLock;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
+import com.cleevio.vexl.module.inbox.dto.request.DeletionRequest;
+import com.cleevio.vexl.module.inbox.dto.request.UpdateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
 import com.cleevio.vexl.module.inbox.exception.InboxNotFoundException;
@@ -8,16 +13,29 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 @Slf4j
 @Service
+@Validated
 @RequiredArgsConstructor
 public class InboxService {
 
     private final InboxRepository inboxRepository;
+    private final MessageService messageService;
+    private final AdvisoryLockService advisoryLockService;
 
-    @Transactional(rollbackFor = Throwable.class)
-    public void createInbox(CreateInboxRequest request) {
+    @Transactional
+    public void createInbox(@Valid CreateInboxRequest request) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.INBOX,
+                InboxAdvisoryLock.CREATE_INBOX.name(),
+                request.publicKey()
+        );
+
         log.info("Creating inbox");
 
         if (this.inboxRepository.existsByPublicKey(request.publicKey())) {
@@ -30,28 +48,44 @@ public class InboxService {
         log.info("New inbox has been created with [{}]", savedInbox);
     }
 
-    private Inbox createInboxEntity(CreateInboxRequest request, String publicKeyHash) {
-        return Inbox.builder()
-                .publicKey(publicKeyHash)
-                .token(request.token())
-                .build();
-    }
-
     @Transactional(readOnly = true)
-    public Inbox findInbox(String publicKey) {
+    public Inbox findInbox(@NotBlank String publicKey) {
         log.debug("Looking for inbox [{}]", publicKey);
         return this.inboxRepository.findByPublicKey(publicKey)
                 .orElseThrow(InboxNotFoundException::new);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
-    public void deleteInbox(Inbox inbox) {
+    @Transactional
+    public void deleteInbox(@Valid final DeletionRequest request) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.INBOX,
+                InboxAdvisoryLock.MODIFYING_INBOX.name(),
+                request.publicKey()
+        );
+
+        final Inbox inbox = findInbox(request.publicKey());
+
+        this.messageService.deleteAllMessages(inbox);
         this.inboxRepository.delete(inbox);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
-    public Inbox updateInbox(Inbox inbox, String firebaseToken) {
-        inbox.setToken(firebaseToken);
+    @Transactional
+    public Inbox updateInbox(@Valid final UpdateInboxRequest request) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.INBOX,
+                InboxAdvisoryLock.MODIFYING_INBOX.name(),
+                request.publicKey()
+        );
+        Inbox inbox = findInbox(request.publicKey());
+
+        inbox.setToken(request.token());
         return this.inboxRepository.save(inbox);
+    }
+
+    private Inbox createInboxEntity(CreateInboxRequest request, String publicKeyHash) {
+        return Inbox.builder()
+                .publicKey(publicKeyHash)
+                .token(request.token())
+                .build();
     }
 }

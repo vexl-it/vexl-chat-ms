@@ -1,10 +1,11 @@
 package com.cleevio.vexl.common;
 
 import com.cleevio.vexl.common.service.SignatureService;
+import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
-import com.cleevio.vexl.module.inbox.enums.MessageType;
+import com.cleevio.vexl.module.inbox.constant.MessageType;
 import com.cleevio.vexl.module.inbox.mapper.MessageMapper;
 import com.cleevio.vexl.module.inbox.service.InboxService;
 import com.cleevio.vexl.module.inbox.service.MessageService;
@@ -58,7 +59,7 @@ public class BaseControllerTest {
     @BeforeEach
     @SneakyThrows
     public void setup() {
-        when(signatureService.isSignatureValid(any(), any(), any())).thenReturn(true);
+        when(signatureService.isSignatureValid(any(CheckSignatureValidityQuery.class))).thenReturn(true);
     }
 
     static {

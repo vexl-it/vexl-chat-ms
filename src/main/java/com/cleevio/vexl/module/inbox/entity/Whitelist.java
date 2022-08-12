@@ -1,13 +1,11 @@
 package com.cleevio.vexl.module.inbox.entity;
 
 import com.cleevio.vexl.common.convertor.Sha256HashConvertor;
-import com.cleevio.vexl.module.inbox.enums.WhitelistState;
-import lombok.AccessLevel;
+import com.cleevio.vexl.module.inbox.constant.WhitelistState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
