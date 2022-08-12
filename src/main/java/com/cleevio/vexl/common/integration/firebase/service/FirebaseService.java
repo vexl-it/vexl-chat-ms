@@ -7,12 +7,8 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
-
-import javax.validation.Valid;
 
 @Slf4j
-@Validated
 @Service
 public class FirebaseService implements NotificationService {
 
@@ -22,7 +18,7 @@ public class FirebaseService implements NotificationService {
     private static final String INBOX = "inbox";
     private static final String SENDER = "sender";
 
-    public void sendPushNotification(@Valid final PushMessageDto dto) {
+    public void sendPushNotification(final PushMessageDto dto) {
         try {
             var messageBuilder = Message.builder();
 
