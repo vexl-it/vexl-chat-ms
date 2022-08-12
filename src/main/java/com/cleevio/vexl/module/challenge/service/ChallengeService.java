@@ -76,6 +76,16 @@ public class ChallengeService {
         );
     }
 
+    @Transactional
+    public void removeInvalidAndExpiredChallenges() {
+        advisoryLockService.lock(
+                ModuleLockNamespace.CHALLENGE,
+                ChallengeAdvisoryLock.REMOVE_CHALLENGE_TASK.name()
+        );
+
+        this.challengeRepository.removeInvalidAndExpiredChallenges(ZonedDateTime.now().minusMinutes(config.expiration()));
+    }
+
     private void invalidateChallenge(Challenge challenge) {
         challenge.setValid(false);
         this.challengeRepository.save(challenge);
@@ -117,15 +127,5 @@ public class ChallengeService {
         byte[] codeVerifier = new byte[32];
         secureRandom.nextBytes(codeVerifier);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier);
-    }
-
-    @Transactional
-    public void removeInvalidAndExpiredChallenges() {
-        advisoryLockService.lock(
-                ModuleLockNamespace.CHALLENGE,
-                ChallengeAdvisoryLock.REMOVE_CHALLENGE_TASK.name()
-        );
-
-        this.challengeRepository.removeInvalidAndExpiredChallenges(ZonedDateTime.now().minusMinutes(config.expiration()));
     }
 }
