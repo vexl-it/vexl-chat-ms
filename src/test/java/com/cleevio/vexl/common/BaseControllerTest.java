@@ -3,6 +3,7 @@ package com.cleevio.vexl.common;
 import com.cleevio.vexl.common.service.SignatureService;
 import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
+import com.cleevio.vexl.module.export.service.ExportService;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
 import com.cleevio.vexl.module.inbox.constant.MessageType;
@@ -40,6 +41,9 @@ public class BaseControllerTest {
 
     @MockBean
     protected InboxService inboxService;
+
+    @MockBean
+    protected ExportService exportService;
 
     @MockBean
     protected SignatureService signatureService;
