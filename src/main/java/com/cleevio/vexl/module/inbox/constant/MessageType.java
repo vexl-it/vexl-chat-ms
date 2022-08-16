@@ -12,6 +12,7 @@ public enum MessageType {
     APPROVE_MESSAGING,
     DISAPPROVE_MESSAGING,
     DELETE_CHAT,
+    BLOCK_CHAT
     ;
 
     public final static EnumSet<MessageType> NOT_ALLOWED_MESSAGE_TYPES = EnumSet.of(DISAPPROVE_MESSAGING, REQUEST_MESSAGING, APPROVE_MESSAGING);

@@ -34,6 +34,8 @@ public class PushService {
                     notificationService.sendPushNotification(createPushMessageDto(event, "Approve reveal", "Reveal was approved."));
             case DISAPPROVE_REVEAL ->
                     notificationService.sendPushNotification(createPushMessageDto(event, "Disapproval reveal", "Request for reveal was disapprove."));
+            case BLOCK_CHAT ->
+                    notificationService.sendPushNotification(createPushMessageDto(event, "Chat blocked", "User blocked chat with you.."));
         }
     }
 
