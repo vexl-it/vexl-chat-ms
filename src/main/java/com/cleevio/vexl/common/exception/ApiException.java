@@ -48,6 +48,7 @@ public abstract class ApiException extends RuntimeException {
 
         INBOX("100", "Inbox Module Error."),
         CHALLENGE("101", "Challenge Module Error."),
+        EXPORT("102", "Export Module Error."),
         ;
 
         /**

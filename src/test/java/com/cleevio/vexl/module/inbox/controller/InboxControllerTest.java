@@ -101,20 +101,8 @@ class InboxControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
-    void testCreateInbox_invalidInput_shouldReturn400() {
-        mvc.perform(post(DEFAULT_EP)
-                        .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
-                        .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
-                        .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(CREATE_INBOX.replace("publicKey", "dummy")))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @SneakyThrows
     void testUpdateInbox_validInput_shouldReturn202() {
-        when(inboxService.updateInbox(INBOX, FIREBASE_TOKEN)).thenReturn(INBOX);
+        when(inboxService.updateInbox(UPDATE_INBOX_REQUEST)).thenReturn(INBOX);
         when(inboxService.findInbox(INBOX_PUBLIC_KEY)).thenReturn(INBOX);
 
         mvc.perform(put(DEFAULT_EP)

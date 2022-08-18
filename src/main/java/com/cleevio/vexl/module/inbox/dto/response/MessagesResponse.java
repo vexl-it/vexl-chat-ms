@@ -1,6 +1,6 @@
 package com.cleevio.vexl.module.inbox.dto.response;
 
-import com.cleevio.vexl.module.inbox.enums.MessageType;
+import com.cleevio.vexl.module.inbox.constant.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;

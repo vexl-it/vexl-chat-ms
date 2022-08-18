@@ -1,7 +1,10 @@
 package com.cleevio.vexl.module.challenge.service;
 
+import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.cryptolib.CLibrary;
+import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.challenge.config.ChallengeConfig;
+import com.cleevio.vexl.module.challenge.constant.ChallengeAdvisoryLock;
 import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeCreateException;
@@ -12,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -27,13 +31,21 @@ import java.util.Base64;
 public class ChallengeService {
 
     private final ChallengeRepository challengeRepository;
+    private final AdvisoryLockService advisoryLockService;
     private final ChallengeConfig config;
+    private static final String SHA256 = "SHA-256";
 
-    @Transactional(rollbackFor = Throwable.class)
-    public String createChallenge(CreateChallengeRequest request) {
+    @Transactional
+    public String createChallenge(@Valid CreateChallengeRequest request) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.CHALLENGE,
+                ChallengeAdvisoryLock.CREATE_CHALLENGE.name(),
+                request.publicKey()
+        );
+
         log.info("Creating new challenge for public key [{}]", request.publicKey());
         try {
-            String challenge = generateRandomChallenge();
+            final String challenge = generateRandomChallenge();
             invalidatedOldChallengeAndCreateNew(challenge, request.publicKey());
             return challenge;
         } catch (NoSuchAlgorithmException e) {
@@ -45,8 +57,8 @@ public class ChallengeService {
         }
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public boolean isSignedChallengeValid(String publicKey, String signature) {
+    @Transactional
+    public boolean isSignedChallengeValid(@NotBlank String publicKey, @NotBlank String signature) {
         Challenge challenge = this.challengeRepository.findByPublicKey(publicKey)
                 .orElseThrow(ChallengeMissingException::new);
 
@@ -64,12 +76,22 @@ public class ChallengeService {
         );
     }
 
+    @Transactional
+    public void removeInvalidAndExpiredChallenges() {
+        advisoryLockService.lock(
+                ModuleLockNamespace.CHALLENGE,
+                ChallengeAdvisoryLock.REMOVE_CHALLENGE_TASK.name()
+        );
+
+        this.challengeRepository.removeInvalidAndExpiredChallenges(ZonedDateTime.now().minusMinutes(config.expiration()));
+    }
+
     private void invalidateChallenge(Challenge challenge) {
         challenge.setValid(false);
         this.challengeRepository.save(challenge);
     }
 
-    private void invalidatedOldChallengeAndCreateNew(@NotNull String challenge, @NotNull String publicKey) {
+    private void invalidatedOldChallengeAndCreateNew(String challenge, String publicKey) {
         Challenge challengeEntity = this.challengeRepository.findByPublicKey(publicKey)
                 .orElse(null);
 
@@ -84,7 +106,7 @@ public class ChallengeService {
         log.info("New challenge [{}] has been saved", savedChallenge);
     }
 
-    private Challenge createActiveChallengeEntity(@NotNull String challenge, @NotNull String publicKey) {
+    private Challenge createActiveChallengeEntity(String challenge, String publicKey) {
         return Challenge.builder()
                 .challenge(challenge)
                 .publicKey(publicKey)
@@ -94,7 +116,7 @@ public class ChallengeService {
 
     private String generateRandomChallenge() throws NoSuchAlgorithmException {
         byte[] bytes = generateCodeVerifier().getBytes(StandardCharsets.US_ASCII);
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+        MessageDigest messageDigest = MessageDigest.getInstance(SHA256);
         messageDigest.update(bytes, 0, bytes.length);
         byte[] digest = messageDigest.digest();
         return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
@@ -105,9 +127,5 @@ public class ChallengeService {
         byte[] codeVerifier = new byte[32];
         secureRandom.nextBytes(codeVerifier);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier);
-    }
-
-    public void removeInvalidAndExpiredChallenges() {
-        this.challengeRepository.removeInvalidAndExpiredChallenges(ZonedDateTime.now().minusMinutes(config.expiration()));
     }
 }

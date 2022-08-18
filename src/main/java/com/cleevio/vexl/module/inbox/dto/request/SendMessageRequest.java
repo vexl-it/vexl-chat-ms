@@ -1,7 +1,7 @@
 package com.cleevio.vexl.module.inbox.dto.request;
 
 import com.cleevio.vexl.common.annotation.CheckAllowedMessageType;
-import com.cleevio.vexl.module.inbox.enums.MessageType;
+import com.cleevio.vexl.module.inbox.constant.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotBlank;

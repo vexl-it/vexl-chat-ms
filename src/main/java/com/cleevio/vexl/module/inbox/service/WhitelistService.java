@@ -3,17 +3,22 @@ package com.cleevio.vexl.module.inbox.service;
 import com.cleevio.vexl.module.inbox.dto.request.BlockInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Whitelist;
-import com.cleevio.vexl.module.inbox.enums.WhitelistState;
+import com.cleevio.vexl.module.inbox.constant.WhitelistState;
 import com.cleevio.vexl.module.inbox.exception.AlreadyApprovedException;
 import com.cleevio.vexl.module.inbox.exception.WhitelistMissingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 
 @Slf4j
 @Service
+@Validated
 @RequiredArgsConstructor
 public class WhitelistService {
 
@@ -27,7 +32,7 @@ public class WhitelistService {
         return this.whitelistRepository.isSenderInWhitelist(publicKeySenderHash, receiverInbox);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public void connectRequesterAndReceiver(Inbox inbox, Inbox requesterInbox, String senderPublicKey, String publicKeyToConfirm) {
         Whitelist whitelist = this.findWaitingWhitelistByInboxAndPublicKey(inbox, publicKeyToConfirm);
 
@@ -38,7 +43,7 @@ public class WhitelistService {
         log.info("New public key [{}] was successfully saved into whitelist for inbox [{}]", publicKeyToConfirm, inbox);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public void createWhiteListEntity(Inbox inbox, String publicKey, WhitelistState state) {
         Whitelist whitelist = Whitelist.builder()
                 .publicKey(publicKey)
@@ -48,8 +53,8 @@ public class WhitelistService {
         this.whitelistRepository.save(whitelist);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
-    public void blockPublicKey(Inbox inbox, BlockInboxRequest request) {
+    @Transactional
+    public void blockPublicKey(@NotNull Inbox inbox, @Valid BlockInboxRequest request) {
         Whitelist whitelist = this.whitelistRepository.findOnWhitelist(inbox, request.publicKeyToBlock())
                 .orElseThrow(WhitelistMissingException::new);
 
@@ -58,7 +63,7 @@ public class WhitelistService {
         log.info("[{}] has been blocked [{}]", whitelist, request.block());
     }
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public void deleteFromWhiteList(Inbox inbox, String publicKey) {
         this.whitelistRepository.delete(this.findWaitingWhitelistByInboxAndPublicKey(inbox, publicKey));
     }

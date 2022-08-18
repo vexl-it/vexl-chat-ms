@@ -5,12 +5,11 @@ import lombok.Data;
 
 import java.util.Collection;
 
-@Data
-@AllArgsConstructor
-public class ErrorResponse {
+public record ErrorResponse(
 
-    private Collection<String> message;
+        Collection<String> message,
 
-    private String code;
+        String code
 
+) {
 }

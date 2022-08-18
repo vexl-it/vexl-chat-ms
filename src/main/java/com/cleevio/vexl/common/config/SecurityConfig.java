@@ -2,6 +2,7 @@ package com.cleevio.vexl.common.config;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.common.service.SignatureService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,10 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 @EnableGlobalMethodSecurity(
 securedEnabled = true,
 prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private SignatureService signatureService;
+    private final SignatureService signatureService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -32,7 +33,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new SecurityFilter(signatureService), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/api-docs/**").permitAll()
-                .antMatchers("/api/v1/temp/**").permitAll()
 				.antMatchers("/actuator/health").permitAll()
                 .anyRequest().authenticated();
     }

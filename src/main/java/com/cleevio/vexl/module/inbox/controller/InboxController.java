@@ -15,7 +15,7 @@ import com.cleevio.vexl.module.inbox.dto.response.InboxResponse;
 import com.cleevio.vexl.module.inbox.dto.response.MessagesResponse;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
-import com.cleevio.vexl.module.inbox.enums.MessageType;
+import com.cleevio.vexl.module.inbox.constant.MessageType;
 import com.cleevio.vexl.module.inbox.mapper.MessageMapper;
 import com.cleevio.vexl.module.inbox.service.InboxService;
 import com.cleevio.vexl.module.inbox.service.MessageService;
@@ -59,9 +59,8 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Create a new inbox.", description = "Every user and every offer must have own inbox.")
-    ResponseEntity<Void> createInbox(@Valid @RequestBody CreateInboxRequest request) {
+    void createInbox(@RequestBody CreateInboxRequest request) {
         this.inboxService.createInbox(request);
-        return ResponseEntity.noContent().build();
     }
 
     @PutMapping
@@ -72,9 +71,8 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.ACCEPTED)
     @Operation(summary = "Update a existing inbox.", description = "You can update only Firebase token.")
-    ResponseEntity<InboxResponse> updateInbox(@Valid @RequestBody UpdateInboxRequest request) {
-        Inbox inbox = this.inboxService.findInbox(request.publicKey());
-        return new ResponseEntity<>(new InboxResponse(this.inboxService.updateInbox(inbox, request.token())), HttpStatus.ACCEPTED);
+    ResponseEntity<InboxResponse> updateInbox(@RequestBody UpdateInboxRequest request) {
+        return new ResponseEntity<>(new InboxResponse(this.inboxService.updateInbox(request)), HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/messages")
@@ -89,7 +87,7 @@ public class InboxController {
             Signature in the request params is to verify that the client owns the private key to the public key that he claims is his.\040
             First you need to retrieve challenge for verification in challenge API. Then sign it with private key and the signature send here.
             """)
-    MessagesResponse retrieveMessages(@Valid @RequestBody MessageRequest request) {
+    MessagesResponse retrieveMessages(@RequestBody MessageRequest request) {
         if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
             throw new InvalidChallengeSignature();
         }
@@ -107,14 +105,13 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Block/unblock the public key so user can't send you a messages.")
-    ResponseEntity<Void> blockInbox(@Valid @RequestBody BlockInboxRequest request) {
+    void blockInbox(@RequestBody BlockInboxRequest request) {
         if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
             throw new InvalidChallengeSignature();
         }
 
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         this.whitelistService.blockPublicKey(inbox, request);
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/messages")
@@ -126,10 +123,9 @@ public class InboxController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Send a message to the inbox.",
             description = "When user wants to contact someone, use this EP.")
-    ResponseEntity<Void> sendMessage(@Valid @RequestBody SendMessageRequest request) {
+    void sendMessage(@Valid @RequestBody SendMessageRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.receiverPublicKey());
         this.messageService.sendMessageToInbox(request.senderPublicKey(), request.receiverPublicKey(), receiverInbox, request.message(), request.messageType());
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/approval/request")
@@ -141,11 +137,10 @@ public class InboxController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Requesting of an approval to send a message.",
             description = "First of all you have to get to user's whitelist, if you want to send a message someone.")
-    ResponseEntity<Void> sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
-                                                 @Valid @RequestBody ApprovalRequest request) {
+    void sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
+                                 @Valid @RequestBody ApprovalRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.publicKey());
         this.messageService.sendRequestToPermission(publicKeySender, request.publicKey(), receiverInbox, request.message());
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/approval/confirm")
@@ -157,7 +152,7 @@ public class InboxController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Approve request for an user.",
             description = "You received request for approval to send messages. You can approve/disapprove it and add user to your whitelist with this EP.")
-    ResponseEntity<Void> confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request) {
+    void confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request) {
         if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
             throw new InvalidChallengeSignature();
         }
@@ -170,8 +165,6 @@ public class InboxController {
             this.whitelistService.connectRequesterAndReceiver(inbox, requesterInbox, request.publicKey(), request.publicKeyToConfirm());
             this.messageService.sendMessageToInbox(request.publicKey(), request.publicKeyToConfirm(), requesterInbox, request.message(), MessageType.APPROVE_MESSAGING);
         }
-
-        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/messages")
@@ -196,9 +189,7 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Delete inbox with all messages.")
-    void deleteInbox(@Valid @RequestBody DeletionRequest request) {
-        Inbox inbox = this.inboxService.findInbox(request.publicKey());
-        this.messageService.deleteAllMessages(inbox);
-        this.inboxService.deleteInbox(inbox);
+    void deleteInbox(@RequestBody DeletionRequest request) {
+        this.inboxService.deleteInbox(request);
     }
 }

@@ -28,6 +28,17 @@
         <addNotNullConstraint tableName="message" columnName="type"/>
     </changeSet>
 
+    <!-- ################################ V3 ################################# -->
+    <changeSet author="David Tilser" id="create_index_sender_public">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="message" schemaName="public"/>
+        </preConditions>
+
+        <createIndex tableName="message" indexName="5834a3584c634d0fab53_ix">
+            <column name="sender_public_key"/>
+        </createIndex>
+    </changeSet>
+
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -58,5 +69,9 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <createIndex tableName="message" indexName="5834a3584c634d0fab53_ix">
+            <column name="sender_public_key"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

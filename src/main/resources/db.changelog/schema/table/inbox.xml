@@ -19,6 +19,17 @@
         <dropNotNullConstraint tableName="inbox" columnName="token"/>
     </changeSet>
 
+    <!-- ################################ V3 ################################# -->
+    <changeSet author="David Tilser" id="create_index_public_key">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="inbox" schemaName="public"/>
+        </preConditions>
+
+        <createIndex tableName="inbox" indexName="a757cbd855c64b2f9934_ix">
+            <column name="public_key"/>
+        </createIndex>
+    </changeSet>
+
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -38,5 +49,9 @@
             </column>
             <column name="token" type="varchar"/>
         </createTable>
+
+        <createIndex tableName="inbox" indexName="a757cbd855c64b2f9934_ix">
+            <column name="public_key"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

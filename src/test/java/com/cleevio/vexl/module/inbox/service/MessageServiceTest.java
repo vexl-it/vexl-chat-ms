@@ -1,5 +1,6 @@
 package com.cleevio.vexl.module.inbox.service;
 
+import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
 import org.junit.jupiter.api.Test;
@@ -21,12 +22,14 @@ class MessageServiceTest {
 
     private final MessageRepository messageRepository = mock(MessageRepository.class);
     private final WhitelistService whitelistService = mock(WhitelistService.class);
+    private final AdvisoryLockService advisoryLockService = mock(AdvisoryLockService.class);
     private final ApplicationEventPublisher applicationEventPublisher = mock(ApplicationEventPublisher.class);
 
     private final MessageService messageService = new MessageService(
             messageRepository,
             whitelistService,
-            applicationEventPublisher
+            applicationEventPublisher,
+            advisoryLockService
     );
 
     static {

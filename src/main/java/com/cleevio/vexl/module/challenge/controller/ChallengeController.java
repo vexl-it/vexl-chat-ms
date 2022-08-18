@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.time.ZonedDateTime;
 
 @Tag(name = "Challenge")
@@ -38,7 +37,7 @@ public class ChallengeController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new challenge.", description = "Verify that a user actually have the private key to the public key he claims is his")
-    ResponseEntity<ChallengeCreatedResponse> createChallenge(@Valid @RequestBody CreateChallengeRequest request) {
+    ResponseEntity<ChallengeCreatedResponse> createChallenge(@RequestBody CreateChallengeRequest request) {
         return new ResponseEntity<>(
                 new ChallengeCreatedResponse(
                         this.challengeService.createChallenge(request),

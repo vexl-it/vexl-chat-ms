@@ -1,10 +1,13 @@
 package com.cleevio.vexl.module.inbox.service;
 
+import com.cleevio.vexl.common.constant.ModuleLockNamespace;
+import com.cleevio.vexl.common.service.AdvisoryLockService;
+import com.cleevio.vexl.module.inbox.constant.MessageAdvisoryLock;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
-import com.cleevio.vexl.module.inbox.enums.MessageType;
-import com.cleevio.vexl.module.inbox.enums.WhitelistState;
-import com.cleevio.vexl.module.inbox.event.PushNotificationEvent;
+import com.cleevio.vexl.module.inbox.constant.MessageType;
+import com.cleevio.vexl.module.inbox.constant.WhitelistState;
+import com.cleevio.vexl.module.inbox.event.NewMessageReceivedEvent;
 import com.cleevio.vexl.module.inbox.exception.RequestMessagingNotAllowedException;
 import com.cleevio.vexl.module.inbox.exception.WhiteListException;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,13 +27,20 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final WhitelistService whitelistService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final AdvisoryLockService advisoryLockService;
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public List<Message> retrieveMessages(Inbox inbox) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.MESSAGE,
+                MessageAdvisoryLock.RETRIEVE_MESSAGE.name(),
+                inbox.getPublicKey()
+        );
+
         List<Message> messages = inbox.getMessages()
                 .stream()
                 .sorted(Comparator.comparing(Message::getId))
-                .collect(Collectors.toList());
+                .toList();
 
         messages.forEach(m -> {
             m.setPulled(true);
@@ -41,13 +50,24 @@ public class MessageService {
         return messages;
     }
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public void deletePulledMessages(Inbox inbox) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.MESSAGE,
+                MessageAdvisoryLock.DELETE_MESSAGE.name(),
+                inbox.getPublicKey()
+        );
+
         this.messageRepository.deleteAllPulledMessages(inbox);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public void sendMessageToInbox(String senderPublicKey, String receiverPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.MESSAGE,
+                MessageAdvisoryLock.SEND_MESSAGE.name(),
+                receiverPublicKey, senderPublicKey
+        );
 
         if (!this.whitelistService.isSenderInWhitelistApproved(senderPublicKey, receiverInbox)) {
             log.info("Sender [{}] is blocked by receiver [{}] or not approve yet.", senderPublicKey, receiverInbox);
@@ -57,8 +77,14 @@ public class MessageService {
         this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, messageType);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public void sendRequestToPermission(String senderPublicKey, String receiverPublicKey, Inbox receiverInbox, String message) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.MESSAGE,
+                MessageAdvisoryLock.SEND_MESSAGE.name(),
+                receiverPublicKey, senderPublicKey
+        );
+
         if (this.whitelistService.isSenderInWhitelist(senderPublicKey, receiverInbox)) {
             log.warn("Sender [{}] has already sent a request for permission to messaging for inbox [{}]", senderPublicKey, receiverInbox);
             throw new RequestMessagingNotAllowedException();
@@ -69,8 +95,14 @@ public class MessageService {
         this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.REQUEST_MESSAGING);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
-    public void sendDisapprovalMessage(String senderPublicKey, String receiverPublicKey,  Inbox receiverInbox, String message) {
+    @Transactional
+    public void sendDisapprovalMessage(String senderPublicKey, String receiverPublicKey, Inbox receiverInbox, String message) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.MESSAGE,
+                MessageAdvisoryLock.SEND_MESSAGE.name(),
+                receiverPublicKey, senderPublicKey
+        );
+
         this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.DISAPPROVE_MESSAGING);
     }
 
@@ -80,7 +112,7 @@ public class MessageService {
         this.messageRepository.save(messageEntity);
 
         if (receiverInbox.getToken() == null) return;
-        this.applicationEventPublisher.publishEvent(new PushNotificationEvent(receiverInbox.getToken(), messageType, receiverPublicKey));
+        this.applicationEventPublisher.publishEvent(new NewMessageReceivedEvent(receiverInbox.getToken(), messageType, receiverPublicKey, senderPublicKey));
     }
 
     private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox, String message, MessageType messageType) {
@@ -92,8 +124,14 @@ public class MessageService {
                 .build();
     }
 
-    @Transactional(rollbackFor = Throwable.class)
+    @Transactional
     public void deleteAllMessages(Inbox inbox) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.MESSAGE,
+                MessageAdvisoryLock.DELETE_ALL_MESSAGES.name(),
+                inbox.getPublicKey()
+        );
+
         this.messageRepository.deleteAllMessages(inbox);
     }
 }

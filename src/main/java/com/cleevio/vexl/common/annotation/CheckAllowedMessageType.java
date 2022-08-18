@@ -19,7 +19,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 public @interface CheckAllowedMessageType {
 
-    String message() default "Not allowed message type. You can find allowed types in Swagger.";
+    String message() default "Not allowed message type.";
 
     Class<?>[] groups() default { };
 

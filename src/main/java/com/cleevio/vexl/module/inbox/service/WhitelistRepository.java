@@ -2,7 +2,7 @@ package com.cleevio.vexl.module.inbox.service;
 
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Whitelist;
-import com.cleevio.vexl.module.inbox.enums.WhitelistState;
+import com.cleevio.vexl.module.inbox.constant.WhitelistState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
