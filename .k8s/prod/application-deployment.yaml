@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: appplication-deployment
+  name: chat-ms-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      component: application
+      component: chat-ms
   template:
     metadata:
       labels:
-        component: application
+        component: chat-ms
     spec:
       imagePullSecrets:
         - name: regcred
@@ -19,7 +19,7 @@ spec:
           persistentVolumeClaim:
             claimName: vexl-data
       containers:
-        - name: application
+        - name: chat-ms
           imagePullPolicy: Always
           image: gitlab.cleevio.cz:4567/backend/vexl/vexl-chat-ms/production:latest
           volumeMounts:
@@ -30,19 +30,19 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: spring.datasource.url
-                  name: spring-profile
+                  name: spring-profile-chat-ms
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
                   key: spring.datasource.username
-                  name: spring-profile
+                  name: spring-profile-chat-ms
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
                   key: spring.datasource.password
-                  name: spring-profile
+                  name: spring-profile-chat-ms
             - name: SECURITY_ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
                   key: security.encryption.key
-                  name: spring-profile
+                  name: spring-profile-chat-ms
