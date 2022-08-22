@@ -8,7 +8,9 @@ import com.cleevio.vexl.module.challenge.constant.ChallengeAdvisoryLock;
 import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeCreateException;
-import com.cleevio.vexl.module.challenge.exception.ChallengeMissingException;
+import com.cleevio.vexl.module.challenge.exception.ChallengeExpiredException;
+import com.cleevio.vexl.module.challenge.exception.InvalidChallengeSignature;
+import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +49,7 @@ public class ChallengeService {
         log.info("Creating new challenge for public key [{}]", request.publicKey());
         try {
             final String challenge = generateRandomChallenge();
-            invalidatedOldChallengeAndCreateNew(challenge, request.publicKey());
+            createNewChallenge(challenge, request.publicKey());
             return challenge;
         } catch (NoSuchAlgorithmException e) {
             log.error("Error while generating the challenge.", e);
@@ -58,21 +61,24 @@ public class ChallengeService {
     }
 
     @Transactional
-    public boolean isSignedChallengeValid(@NotBlank String publicKey, @NotBlank String signature) {
-        Challenge challenge = this.challengeRepository.findByPublicKey(publicKey)
-                .orElseThrow(ChallengeMissingException::new);
+    public boolean isSignedChallengeValid(@NotBlank String publicKey, @Valid @NotNull SignedChallenge signedChallenge) {
+        Challenge challenge = this.challengeRepository.findByChallengeAndPublicKey(
+                signedChallenge.challenge(),
+                publicKey
+        ).orElseThrow(ChallengeExpiredException::new);
+
+        invalidateChallenge(challenge);
 
         if (ZonedDateTime.now().isAfter(challenge.getCreatedAt().plusMinutes(config.expiration()))) {
-            log.info("Challenge [{}] is expired. Setting to invalid and returning exception.", challenge);
-            invalidateChallenge(challenge);
-            throw new ChallengeMissingException();
+            log.info("Challenge [{}] is expired. Returning exception.", challenge);
+            throw new ChallengeExpiredException();
         }
 
         return CLibrary.CRYPTO_LIB.ecdsa_verify(
                 challenge.getPublicKey(),
                 challenge.getChallenge(),
                 challenge.getChallenge().length(),
-                signature
+                signedChallenge.signature()
         );
     }
 
@@ -86,24 +92,22 @@ public class ChallengeService {
         this.challengeRepository.removeInvalidAndExpiredChallenges(ZonedDateTime.now().minusMinutes(config.expiration()));
     }
 
+    @Transactional
+    public void verifySignedChallenge(@NotBlank final String publicKey, @Valid @NotNull final SignedChallenge signedChallenge) {
+        if (!isSignedChallengeValid(publicKey, signedChallenge)) {
+            throw new InvalidChallengeSignature();
+        }
+    }
+
     private void invalidateChallenge(Challenge challenge) {
         challenge.setValid(false);
         this.challengeRepository.save(challenge);
     }
 
-    private void invalidatedOldChallengeAndCreateNew(String challenge, String publicKey) {
-        Challenge challengeEntity = this.challengeRepository.findByPublicKey(publicKey)
-                .orElse(null);
-
-        if (challengeEntity != null) {
-            log.info("Previous challenge [{}] will be invalidated.", challengeEntity);
-            challengeEntity.setValid(false);
-            this.challengeRepository.save(challengeEntity);
-        }
-
-        Challenge newChallenge = createActiveChallengeEntity(challenge, publicKey);
-        Challenge savedChallenge = this.challengeRepository.save(newChallenge);
-        log.info("New challenge [{}] has been saved", savedChallenge);
+    private void createNewChallenge(String challenge, String publicKey) {
+        this.challengeRepository.save(
+                createActiveChallengeEntity(challenge, publicKey)
+        );
     }
 
     private Challenge createActiveChallengeEntity(String challenge, String publicKey) {

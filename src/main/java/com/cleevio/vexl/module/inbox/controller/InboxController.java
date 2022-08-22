@@ -1,7 +1,6 @@
 package com.cleevio.vexl.module.inbox.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
-import com.cleevio.vexl.module.challenge.exception.InvalidChallengeSignature;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
 import com.cleevio.vexl.module.inbox.dto.request.ApprovalConfirmRequest;
 import com.cleevio.vexl.module.inbox.dto.request.ApprovalRequest;
@@ -72,6 +71,7 @@ public class InboxController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @Operation(summary = "Update a existing inbox.", description = "You can update only Firebase token.")
     ResponseEntity<InboxResponse> updateInbox(@RequestBody UpdateInboxRequest request) {
+        challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
         return new ResponseEntity<>(new InboxResponse(this.inboxService.updateInbox(request)), HttpStatus.ACCEPTED);
     }
 
@@ -88,9 +88,7 @@ public class InboxController {
             First you need to retrieve challenge for verification in challenge API. Then sign it with private key and the signature send here.
             """)
     MessagesResponse retrieveMessages(@RequestBody MessageRequest request) {
-        if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
-            throw new InvalidChallengeSignature();
-        }
+        challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
 
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         List<Message> messages = this.messageService.retrieveMessages(inbox);
@@ -106,9 +104,7 @@ public class InboxController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Block/unblock the public key so user can't send you a messages.")
     void blockInbox(@RequestBody BlockInboxRequest request) {
-        if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
-            throw new InvalidChallengeSignature();
-        }
+        challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
 
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         this.whitelistService.blockPublicKey(inbox, request);
@@ -124,6 +120,8 @@ public class InboxController {
     @Operation(summary = "Send a message to the inbox.",
             description = "When user wants to contact someone, use this EP.")
     void sendMessage(@Valid @RequestBody SendMessageRequest request) {
+        challengeService.verifySignedChallenge(request.senderPublicKey(), request.signedChallenge());
+
         Inbox receiverInbox = this.inboxService.findInbox(request.receiverPublicKey());
         this.messageService.sendMessageToInbox(request.senderPublicKey(), request.receiverPublicKey(), receiverInbox, request.message(), request.messageType());
     }
@@ -153,9 +151,8 @@ public class InboxController {
     @Operation(summary = "Approve request for an user.",
             description = "You received request for approval to send messages. You can approve/disapprove it and add user to your whitelist with this EP.")
     void confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request) {
-        if (!this.challengeService.isSignedChallengeValid(request.publicKey(), request.signature())) {
-            throw new InvalidChallengeSignature();
-        }
+        challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
+
         Inbox requesterInbox = this.inboxService.findInbox(request.publicKeyToConfirm());
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         if (!request.approve()) {
@@ -177,6 +174,8 @@ public class InboxController {
     @Operation(summary = "Delete messages what you already have pulled.",
             description = "After every pull, check if you have all messages and then remove them with this EP.")
     void deletePulledMessages(@Valid @RequestBody DeletionRequest request) {
+        challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
+
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         this.messageService.deletePulledMessages(inbox);
     }
@@ -190,6 +189,8 @@ public class InboxController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Delete inbox with all messages.")
     void deleteInbox(@RequestBody DeletionRequest request) {
+        challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
+
         this.inboxService.deleteInbox(request);
     }
 }
