@@ -2,7 +2,6 @@ package com.cleevio.vexl.common.integration.firebase.service;
 
 import com.cleevio.vexl.module.push.dto.PushMessageDto;
 import com.cleevio.vexl.module.push.service.NotificationService;
-import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,6 @@ public class FirebaseService implements NotificationService {
             messageBuilder.putData(TYPE, dto.messageType().name());
             messageBuilder.putData(INBOX, dto.receiverPublicKey());
             messageBuilder.putData(SENDER, dto.senderPublicKey());
-            messageBuilder.setAndroidConfig(AndroidConfig.builder().build());
 
             final String response = FirebaseMessaging.getInstance().sendAsync(messageBuilder.build()).get();
             log.info("Sent message: " + response);
