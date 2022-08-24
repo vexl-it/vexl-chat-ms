@@ -10,7 +10,7 @@ import java.util.Optional;
 
 interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
-    Optional<Challenge> findByPublicKey(String publicKey);
+    Optional<Challenge> findByChallengeAndPublicKey(String challenge, String publicKey);
 
     @Modifying
     @Query("delete from Challenge c where c.valid = false or c.createdAt < :expiration")

@@ -30,6 +30,17 @@
         </createIndex>
     </changeSet>
 
+    <!-- ################################ V4 ################################# -->
+    <changeSet author="David Tilser" id="add_column_platform">
+        <preConditions onSqlOutput="TEST" onFail="MARK_RAN">
+            <tableExists tableName="inbox" />
+        </preConditions>
+
+        <addColumn tableName="inbox" >
+            <column name="platform" type="varchar"/>
+        </addColumn>
+    </changeSet>
+
     <!-- ##################################################################### -->
     <!-- ###################### TABLE INSTALL CHANGESET ###################### -->
     <!-- ##################################################################### -->
@@ -48,6 +59,7 @@
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="token" type="varchar"/>
+            <column name="platform" type="varchar"/>
         </createTable>
 
         <createIndex tableName="inbox" indexName="a757cbd855c64b2f9934_ix">

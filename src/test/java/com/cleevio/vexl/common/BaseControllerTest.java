@@ -32,6 +32,7 @@ public class BaseControllerTest {
     protected static final String INBOX_PUBLIC_KEY = "dummy_inbox_public_key";
     protected static final String FIREBASE_TOKEN = "dummy_firebase_token";
     protected static final String CHALLENGE_SIGNATURE = "dummy_challenge_signature";
+    protected static final String CHALLENGE = "dummy_challenge";
 
     @Autowired
     protected MockMvc mvc;

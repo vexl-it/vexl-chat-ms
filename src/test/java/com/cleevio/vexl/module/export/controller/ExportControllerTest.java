@@ -21,6 +21,7 @@ class ExportControllerTest extends BaseControllerTest {
     private static final String DEFAULT_EP = "/api/v1/export";
     private static final String ME_EP = DEFAULT_EP + "/me";
     private static final String RESULT_ME_EP = "dummy_result";
+    private static final String X_PLATFORM = "ios";
 
     @Test
     void testExportMyData_validInput_shouldReturn200() throws Exception {
@@ -30,6 +31,7 @@ class ExportControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pdfFile", is(RESULT_ME_EP)));
