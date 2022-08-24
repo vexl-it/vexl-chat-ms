@@ -1,10 +1,10 @@
 package com.cleevio.vexl.common.security.filter;
 
 import com.cleevio.vexl.common.dto.ErrorResponse;
-import com.cleevio.vexl.common.exception.DigitalSignatureException;
 import com.cleevio.vexl.common.security.AuthenticationHolder;
 import com.cleevio.vexl.common.service.SignatureService;
 import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
+import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -24,6 +24,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     public static final String HEADER_PUBLIC_KEY = "public-key";
     public static final String HEADER_HASH = "hash";
     public static final String HEADER_SIGNATURE = "signature";
+    public static final String X_PLATFORM = "X-Platform";
 
     private final SignatureService signatureService;
 
@@ -38,13 +39,16 @@ public class SecurityFilter extends OncePerRequestFilter {
         final String publicKey = request.getHeader(HEADER_PUBLIC_KEY);
         final String hash = request.getHeader(HEADER_HASH);
         final String signature = request.getHeader(HEADER_SIGNATURE);
+        final String platform = request.getHeader(X_PLATFORM);
 
-        if (signature == null || publicKey == null || hash == null || !requestURI.contains("/api/v1/")) {
+        if (signature == null || publicKey == null || hash == null || platform == null || !requestURI.contains("/api/v1/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
+            Platform.valueOf(platform.toUpperCase());
+
             if (signatureService.isSignatureValid(new CheckSignatureValidityQuery(publicKey, hash, signature))) {
                 AuthenticationHolder authenticationHolder;
 
@@ -57,7 +61,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
-            handleError(response, "Signature verification failed: " + e.getMessage(), 400);
+            handleError(response, "Authentication failed: " + e.getMessage(), 400);
         }
 
         filterChain.doFilter(request, response);

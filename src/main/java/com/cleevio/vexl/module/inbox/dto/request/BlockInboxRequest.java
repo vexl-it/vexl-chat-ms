@@ -1,7 +1,9 @@
 package com.cleevio.vexl.module.inbox.dto.request;
 
+import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -15,13 +17,13 @@ public record BlockInboxRequest(
         @Schema(required = true, description = "Public key which will be blocked/unblocked.")
         String publicKeyToBlock,
 
-        @NotBlank
-        @Schema(required = true, description = "Verification that you are the actual owner of the public key under which you block/unblock public key.")
-        String signature,
-
         @NotNull
         @Schema(required = true, description = "Whether you block (true) or unblock (false) the public key.")
-        Boolean block
+        Boolean block,
+
+        @Valid
+        @NotNull
+        SignedChallenge signedChallenge
 
 ) {
 }

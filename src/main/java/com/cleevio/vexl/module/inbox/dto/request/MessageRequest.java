@@ -1,8 +1,11 @@
 package com.cleevio.vexl.module.inbox.dto.request;
 
+import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public record MessageRequest(
 
@@ -11,12 +14,9 @@ public record MessageRequest(
         String publicKey,
 
 
-        @NotBlank
-        @Schema(required = true, description = """
-                To verify that the client owns the private key to the public key that he claims is his.\040
-                First you need to retrieve challenge for verification in challenge API. Then sign it with private key and the signature send here.
-                """)
-        String signature
+        @Valid
+        @NotNull
+        SignedChallenge signedChallenge
 
 ) {
 }

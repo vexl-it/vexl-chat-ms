@@ -2,9 +2,12 @@ package com.cleevio.vexl.module.inbox.dto.request;
 
 import com.cleevio.vexl.common.annotation.CheckAllowedMessageType;
 import com.cleevio.vexl.module.inbox.constant.MessageType;
+import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public record SendMessageRequest(
 
@@ -23,7 +26,11 @@ public record SendMessageRequest(
         @CheckAllowedMessageType
         @Schema(required = true, description = "Type of message you're sending. Options - MESSAGE, REQUEST_REVEAL, APPROVE_REVEAL, DELETE_CHAT. " +
                 "Types - REQUEST_MESSAGING, APPROVE_MESSAGING and DISAPPROVE_MESSAGING are not possible to send here. " +
-                 "They will be automatically assigned to message sent via permission EPs.")
-        MessageType messageType
+                "They will be automatically assigned to message sent via permission EPs.")
+        MessageType messageType,
+
+        @Valid
+        @NotNull
+        SignedChallenge signedChallenge
 ) {
 }

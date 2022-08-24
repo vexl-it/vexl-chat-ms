@@ -1,9 +1,11 @@
 package com.cleevio.vexl.common.integration.firebase.service;
 
+import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.push.dto.PushMessageDto;
 import com.cleevio.vexl.module.push.service.NotificationService;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,9 @@ public class FirebaseService implements NotificationService {
         try {
             var messageBuilder = Message.builder();
 
+            if (Platform.IOS.equals(dto.platform())) {
+                messageBuilder.setNotification(Notification.builder().setTitle(dto.title()).setBody(dto.text()).build());
+            }
             messageBuilder.setToken(dto.token());
             messageBuilder.putData(TITLE, dto.title());
             messageBuilder.putData(BODY, dto.text());
@@ -33,6 +38,5 @@ public class FirebaseService implements NotificationService {
         } catch (Exception e) {
             log.error("Error sending notification", e);
         }
-
     }
 }

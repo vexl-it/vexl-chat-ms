@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.inbox.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
+import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.entity.Message;
 import com.cleevio.vexl.module.inbox.entity.Whitelist;
@@ -58,8 +59,8 @@ class InboxMessagingIT {
         final var requestUserA = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_A);
         final var requestUserB = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_B);
 
-        this.inboxService.createInbox(requestUserA);
-        this.inboxService.createInbox(requestUserB);
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        this.inboxService.createInbox(requestUserB, Platform.ANDROID);
 
         final Inbox inboxA = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_A).get();
         final Inbox inboxB = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
@@ -73,12 +74,12 @@ class InboxMessagingIT {
     @Test
     void testCreateDuplicatedInbox_shouldThrowException() {
         final var requestUserA = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_A);
-        this.inboxService.createInbox(requestUserA);
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
         assertThat(this.inboxRepository.findAll()).hasSize(1);
 
         assertThrows(
                 DuplicatedPublicKeyException.class,
-                () -> this.inboxService.createInbox(requestUserA)
+                () -> this.inboxService.createInbox(requestUserA, Platform.ANDROID)
         );
     }
 
@@ -88,8 +89,8 @@ class InboxMessagingIT {
         final var requestUserB = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_B);
 
         //creating new inboxes
-        this.inboxService.createInbox(requestUserA);
-        this.inboxService.createInbox(requestUserB);
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        this.inboxService.createInbox(requestUserB, Platform.ANDROID);
 
         final Inbox inboxToWhichRequestIsSent = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
 
@@ -121,8 +122,8 @@ class InboxMessagingIT {
         final var requestUserB = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_B);
 
         //creating new inboxes
-        this.inboxService.createInbox(requestUserA);
-        this.inboxService.createInbox(requestUserB);
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        this.inboxService.createInbox(requestUserB, Platform.ANDROID);
 
         final Inbox inboxToWhichRequestIsSent = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
 
@@ -141,8 +142,8 @@ class InboxMessagingIT {
         final var requestUserB = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_B);
 
         //creating new inboxes
-        this.inboxService.createInbox(requestUserA);
-        this.inboxService.createInbox(requestUserB);
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        this.inboxService.createInbox(requestUserB, Platform.ANDROID);
 
         final Inbox confirmer = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_A).get();
         final Inbox requester = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
@@ -186,8 +187,8 @@ class InboxMessagingIT {
         final var requestUserB = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_B);
 
         //creating new inboxes
-        this.inboxService.createInbox(requestUserA);
-        this.inboxService.createInbox(requestUserB);
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        this.inboxService.createInbox(requestUserB, Platform.ANDROID);
 
         final Inbox confirmer = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_A).get();
         final Inbox requester = this.inboxRepository.findByPublicKey(PUBLIC_KEY_USER_B).get();
