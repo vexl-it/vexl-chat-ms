@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.inbox.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
+import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.inbox.dto.request.ApprovalConfirmRequest;
 import com.cleevio.vexl.module.inbox.dto.request.ApprovalRequest;
 import com.cleevio.vexl.module.inbox.dto.request.BlockInboxRequest;
@@ -58,8 +59,9 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Create a new inbox.", description = "Every user and every offer must have own inbox.")
-    void createInbox(@RequestBody CreateInboxRequest request) {
-        this.inboxService.createInbox(request);
+    void createInbox(@RequestBody CreateInboxRequest request,
+                     @RequestHeader(name = SecurityFilter.X_PLATFORM) String platform) {
+        this.inboxService.createInbox(request, Platform.valueOf(platform.toUpperCase()));
     }
 
     @PutMapping

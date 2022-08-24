@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.inbox.service;
 
 import com.cleevio.vexl.common.service.AdvisoryLockService;
+import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
@@ -49,7 +50,7 @@ class InboxServiceTest {
     void createInbox_inboxShouldBeCreated() {
         final var inboxEvent = ArgumentCaptor.forClass(Inbox.class);
         final var publicHash = ArgumentCaptor.forClass(String.class);
-        this.inboxService.createInbox(CREATE_INBOX_REQUEST);
+        this.inboxService.createInbox(CREATE_INBOX_REQUEST, Platform.ANDROID);
         verify(this.inboxRepository).existsByPublicKey(publicHash.capture());
         verify(this.inboxRepository).save(inboxEvent.capture());
         final var inboxResult = inboxEvent.getValue();
@@ -65,7 +66,7 @@ class InboxServiceTest {
 
         assertThrows(
                 DuplicatedPublicKeyException.class,
-                () -> this.inboxService.createInbox(CREATE_INBOX_REQUEST)
+                () -> this.inboxService.createInbox(CREATE_INBOX_REQUEST, Platform.ANDROID)
         );
     }
 

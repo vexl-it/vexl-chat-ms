@@ -37,6 +37,7 @@ class InboxControllerTest extends BaseControllerTest {
     private static final String APPROVAL_REQUEST = DEFAULT_EP + "/approval/request";
     private static final String APPROVAL_CONFIRM = DEFAULT_EP + "/approval/confirm";
     private static final String DELETE_MESSAGES = DEFAULT_EP + "/messages";
+    private static final String X_PLATFORM = "android";
     private static final UpdateInboxRequest UPDATE_INBOX_REQUEST;
     private static final MessageRequest MESSAGE_REQUEST;
     private static final BlockInboxRequest BLOCK_INBOX_REQUEST;
@@ -109,6 +110,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CREATE_INBOX))
                 .andExpect(status().isNoContent());
@@ -124,6 +126,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(UPDATE_INBOX_REQUEST)))
                 .andExpect(status().isAccepted())
@@ -144,6 +147,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(MESSAGE_REQUEST)))
                 .andExpect(status().isOk())
@@ -162,6 +166,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(BLOCK_INBOX_REQUEST)))
                 .andExpect(status().isNoContent());
@@ -176,6 +181,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(POST_MESSAGE))
                 .andExpect(status().isNoContent());
@@ -190,6 +196,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(APPROVAL_REQUEST_PAYLOAD))
                 .andExpect(status().isNoContent());
@@ -205,6 +212,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(APPROVAL_CONFIRM_PAYLOAD))
                 .andExpect(status().isNoContent());
@@ -219,6 +227,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(DELETE_PAYLOAD))
                 .andExpect(status().isOk());
@@ -233,6 +242,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
                         .header(SecurityFilter.HEADER_HASH, HASH_HEADER)
                         .header(SecurityFilter.HEADER_SIGNATURE, SIGNATURE_HEADER)
+                        .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(DELETE_PAYLOAD))
                 .andExpect(status().isOk());

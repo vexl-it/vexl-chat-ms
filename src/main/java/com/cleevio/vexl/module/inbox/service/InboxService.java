@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.inbox.service;
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.inbox.constant.InboxAdvisoryLock;
+import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.DeletionRequest;
 import com.cleevio.vexl.module.inbox.dto.request.UpdateInboxRequest;
@@ -17,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Slf4j
 @Service
@@ -29,7 +31,7 @@ public class InboxService {
     private final AdvisoryLockService advisoryLockService;
 
     @Transactional
-    public void createInbox(@Valid CreateInboxRequest request) {
+    public void createInbox(@Valid CreateInboxRequest request, @NotNull Platform platform) {
         advisoryLockService.lock(
                 ModuleLockNamespace.INBOX,
                 InboxAdvisoryLock.CREATE_INBOX.name(),
@@ -43,8 +45,8 @@ public class InboxService {
             throw new DuplicatedPublicKeyException();
         }
 
-        Inbox inbox = createInboxEntity(request, request.publicKey());
-        Inbox savedInbox = this.inboxRepository.save(inbox);
+        final Inbox inbox = createInboxEntity(request, request.publicKey(), platform);
+        final Inbox savedInbox = this.inboxRepository.save(inbox);
         log.info("New inbox has been created with [{}]", savedInbox);
     }
 
@@ -82,10 +84,12 @@ public class InboxService {
         return this.inboxRepository.save(inbox);
     }
 
-    private Inbox createInboxEntity(CreateInboxRequest request, String publicKeyHash) {
+    private Inbox createInboxEntity(CreateInboxRequest request, String publicKeyHash,
+                                    Platform platform) {
         return Inbox.builder()
                 .publicKey(publicKeyHash)
                 .token(request.token())
+                .platform(platform)
                 .build();
     }
 }

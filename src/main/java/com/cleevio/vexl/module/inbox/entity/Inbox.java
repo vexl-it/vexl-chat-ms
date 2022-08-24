@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.inbox.entity;
 
 import com.cleevio.vexl.common.convertor.AesEncryptionConvertor;
 import com.cleevio.vexl.common.convertor.Sha256HashConvertor;
+import com.cleevio.vexl.module.inbox.constant.Platform;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -49,6 +52,9 @@ public class Inbox {
 
     @Convert(converter = AesEncryptionConvertor.class)
     private String token;
+
+    @Enumerated(EnumType.STRING)
+    private Platform platform;
 
     @OneToMany(mappedBy = "inbox", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Message> messages = new ArrayList<>();
