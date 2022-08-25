@@ -1,6 +1,7 @@
 package com.cleevio.vexl.utils;
 
 import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
+import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,8 @@ public final class RequestCreatorTestUtil {
     public static CreateInboxRequest createInboxRequest(String publicKey) {
         return new CreateInboxRequest(
                 publicKey,
-                null
+                null,
+                new SignedChallenge("dummy_challenge", "dummy_signature")
         );
     }
 
