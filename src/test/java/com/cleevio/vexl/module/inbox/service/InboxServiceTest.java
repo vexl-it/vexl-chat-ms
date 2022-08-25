@@ -2,6 +2,7 @@ package com.cleevio.vexl.module.inbox.service;
 
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.inbox.constant.Platform;
+import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
@@ -20,10 +21,13 @@ import static org.mockito.Mockito.when;
 class InboxServiceTest {
 
     private static final CreateInboxRequest CREATE_INBOX_REQUEST;
+    private static final SignedChallenge SIGNED_CHALLENGE;
     private static final String PUBLIC_KEY;
     private static final String PUBLIC_KEY_HASH;
     private static final String TOKEN;
     private static final Inbox INBOX;
+    private static final String CHALLENGE = "dummy_challenge";
+    private static final String SIGNATURE = "dummy_signature";
 
     private final InboxRepository inboxRepository = mock(InboxRepository.class);
     private final MessageService messageService = mock(MessageService.class);
@@ -36,10 +40,12 @@ class InboxServiceTest {
     );
 
     static {
+        SIGNED_CHALLENGE = new SignedChallenge(CHALLENGE, SIGNATURE);
+
         PUBLIC_KEY_HASH = "3Qf0lOb0FaWDXU59xGNa/4pv0s9kKxbbnNIYXBNxUUQ=";
         PUBLIC_KEY = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUU0d0VBWUhLb1pJemowQ0FRWUZLNEVFQUNFRE9nQUVqT2xDSnhwVHFFZ1k2T0FER2lTdXdUbjBJZWFIZHZEawo0NkZYeDM5Yk5memY0Ry9zcFZXb1NibTIvODVhbmNodDE1c2hzSmdONnVBPQotLS0tLUVORCBQVUJMSUMgS0VZLS0tLS0K";
         TOKEN = "dummy_token";
-        CREATE_INBOX_REQUEST = new CreateInboxRequest(PUBLIC_KEY, TOKEN);
+        CREATE_INBOX_REQUEST = new CreateInboxRequest(PUBLIC_KEY, TOKEN, SIGNED_CHALLENGE);
 
         INBOX = new Inbox();
         INBOX.setPublicKey(PUBLIC_KEY_HASH);

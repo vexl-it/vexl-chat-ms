@@ -61,6 +61,7 @@ public class InboxController {
     @Operation(summary = "Create a new inbox.", description = "Every user and every offer must have own inbox.")
     void createInbox(@RequestBody CreateInboxRequest request,
                      @RequestHeader(name = SecurityFilter.X_PLATFORM) String platform) {
+        challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
         this.inboxService.createInbox(request, Platform.valueOf(platform.toUpperCase()));
     }
 
