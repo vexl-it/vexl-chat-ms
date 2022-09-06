@@ -84,6 +84,17 @@ public class InboxService {
         return this.inboxRepository.save(inbox);
     }
 
+    @Transactional
+    public void deleteInvalidToken(final String inboxPublicKey, final String firebaseToken) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.INBOX,
+                InboxAdvisoryLock.MODIFYING_INBOX.name(),
+                inboxPublicKey
+        );
+
+        this.inboxRepository.deleteInvalidToken(inboxPublicKey, firebaseToken);
+    }
+
     private Inbox createInboxEntity(CreateInboxRequest request, String publicKeyHash,
                                     Platform platform) {
         return Inbox.builder()
