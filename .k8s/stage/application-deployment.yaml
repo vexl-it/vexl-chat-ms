@@ -18,13 +18,6 @@ spec:
         - name: application
           imagePullPolicy: Always
           image: gitlab.cleevio.cz:4567/backend/vexl/vexl-chat-ms/staging:latest
-          resources:
-            requests:
-              memory: "1024Mi"
-              cpu: "250m"
-            limits:
-              memory: "1024Mi"
-              cpu: "250m"
           readinessProbe:
             httpGet:
               port: 8282
