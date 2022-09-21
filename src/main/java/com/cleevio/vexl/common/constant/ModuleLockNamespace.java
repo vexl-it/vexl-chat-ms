@@ -5,5 +5,6 @@ public enum ModuleLockNamespace {
     CHALLENGE,
     INBOX,
     MESSAGE,
+    STATS,
     ;
 }

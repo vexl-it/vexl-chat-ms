@@ -10,14 +10,21 @@ import com.cleevio.vexl.module.inbox.constant.WhitelistState;
 import com.cleevio.vexl.module.inbox.event.NewMessageReceivedEvent;
 import com.cleevio.vexl.module.inbox.exception.RequestMessagingNotAllowedException;
 import com.cleevio.vexl.module.inbox.exception.WhiteListException;
+import com.cleevio.vexl.module.stats.constant.StatsKey;
+import com.cleevio.vexl.module.stats.dto.StatsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+
+import static com.cleevio.vexl.module.stats.constant.StatsKey.MESSAGES_ABSOLUTE_SUM;
+import static com.cleevio.vexl.module.stats.constant.StatsKey.MESSAGES_NOT_PULLED_SUM;
 
 @Slf4j
 @Service
@@ -110,6 +117,40 @@ public class MessageService {
         this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.DISAPPROVE_MESSAGING);
     }
 
+    @Transactional
+    public void deleteAllMessages(Inbox inbox) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.MESSAGE,
+                MessageAdvisoryLock.DELETE_ALL_MESSAGES.name(),
+                inbox.getPublicKey()
+        );
+
+        this.messageRepository.deleteAllMessages(inbox);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StatsDto> retrieveStats(final StatsKey... statsKeys) {
+        final List<StatsDto> statsDtos = new ArrayList<>();
+        Arrays.stream(statsKeys).forEach(statKey -> {
+            switch (statKey) {
+                case MESSAGES_ABSOLUTE_SUM -> statsDtos.add(new StatsDto(
+                        MESSAGES_ABSOLUTE_SUM,
+                        this.messageRepository.getLastValueInSequenceForMessage()
+                ));
+                case MESSAGES_NOT_PULLED_SUM -> statsDtos.add(new StatsDto(
+                        MESSAGES_NOT_PULLED_SUM,
+                        this.messageRepository.getNotPulledMessagesCount()
+                ));
+            }
+        });
+        return statsDtos;
+    }
+
+    @Transactional
+    public void save(final Message message) {
+        this.messageRepository.save(message);
+    }
+
     private void saveMessageToInboxAndSendNotification(String senderPublicKey, String receiverPublicKey,
                                                        Inbox receiverInbox, String message,
                                                        MessageType messageType) {
@@ -136,16 +177,5 @@ public class MessageService {
                 .senderPublicKey(senderPublicKey)
                 .type(messageType)
                 .build();
-    }
-
-    @Transactional
-    public void deleteAllMessages(Inbox inbox) {
-        advisoryLockService.lock(
-                ModuleLockNamespace.MESSAGE,
-                MessageAdvisoryLock.DELETE_ALL_MESSAGES.name(),
-                inbox.getPublicKey()
-        );
-
-        this.messageRepository.deleteAllMessages(inbox);
     }
 }

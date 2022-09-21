@@ -16,4 +16,10 @@ interface MessageRepository extends JpaRepository<Message, Long>, JpaSpecificati
     @Modifying
     @Query("delete from Message m where m.inbox = :inbox")
     void deleteAllMessages(Inbox inbox);
+
+    @Query(value = "SELECT last_value from message_id_seq", nativeQuery = true)
+    int getLastValueInSequenceForMessage();
+
+    @Query("select count(m) from Message m where m.pulled = false")
+    int getNotPulledMessagesCount();
 }
