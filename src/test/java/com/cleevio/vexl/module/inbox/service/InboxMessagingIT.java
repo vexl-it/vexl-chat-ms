@@ -8,7 +8,6 @@ import com.cleevio.vexl.module.inbox.entity.Whitelist;
 import com.cleevio.vexl.module.inbox.constant.MessageType;
 import com.cleevio.vexl.module.inbox.constant.WhitelistState;
 import com.cleevio.vexl.module.inbox.exception.AlreadyApprovedException;
-import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
 import com.cleevio.vexl.module.inbox.exception.RequestMessagingNotAllowedException;
 import com.cleevio.vexl.utils.CryptographyTestKeysUtil;
 import com.cleevio.vexl.utils.RequestCreatorTestUtil;
@@ -72,15 +71,13 @@ class InboxMessagingIT {
     }
 
     @Test
-    void testCreateDuplicatedInbox_shouldThrowException() {
+    void testCreateDuplicatedInbox_shouldNotCreateInbox() {
         final var requestUserA = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_A);
         this.inboxService.createInbox(requestUserA, Platform.ANDROID);
         assertThat(this.inboxRepository.findAll()).hasSize(1);
 
-        assertThrows(
-                DuplicatedPublicKeyException.class,
-                () -> this.inboxService.createInbox(requestUserA, Platform.ANDROID)
-        );
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        assertThat(this.inboxRepository.findAll()).hasSize(1);
     }
 
     @Test
