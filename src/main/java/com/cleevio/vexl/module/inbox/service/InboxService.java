@@ -8,7 +8,6 @@ import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.DeletionRequest;
 import com.cleevio.vexl.module.inbox.dto.request.UpdateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
-import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
 import com.cleevio.vexl.module.inbox.exception.InboxNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,7 @@ public class InboxService {
 
         if (this.inboxRepository.existsByPublicKey(request.publicKey())) {
             log.warn("Inbox [{}] already exists", request.publicKey());
-            throw new DuplicatedPublicKeyException();
+            return;
         }
 
         final Inbox inbox = createInboxEntity(request, request.publicKey(), platform);

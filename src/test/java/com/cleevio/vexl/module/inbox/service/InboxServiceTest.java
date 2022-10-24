@@ -5,7 +5,6 @@ import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
-import com.cleevio.vexl.module.inbox.exception.DuplicatedPublicKeyException;
 import com.cleevio.vexl.module.inbox.exception.InboxNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,7 +13,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,13 +68,11 @@ class InboxServiceTest {
     }
 
     @Test
-    void createDuplicateInbox_shouldThrowException() {
+    void createDuplicateInbox_shouldNotCreateInbox() {
         when(this.inboxRepository.existsByPublicKey(PUBLIC_KEY)).thenReturn(true);
 
-        assertThrows(
-                DuplicatedPublicKeyException.class,
-                () -> this.inboxService.createInbox(CREATE_INBOX_REQUEST, Platform.ANDROID)
-        );
+        this.inboxService.createInbox(CREATE_INBOX_REQUEST, Platform.ANDROID);
+        verify(inboxRepository, never()).save(any());
     }
 
     @Test
