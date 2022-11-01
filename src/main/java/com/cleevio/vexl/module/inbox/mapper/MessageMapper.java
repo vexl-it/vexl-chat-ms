@@ -12,6 +12,7 @@ public class MessageMapper {
 
     public MessagesResponse.MessageResponse mapSingle(Message message) {
         return new MessagesResponse.MessageResponse(
+                message.getId(),
                 message.getMessage(),
                 message.getSenderPublicKey(),
                 message.getType()

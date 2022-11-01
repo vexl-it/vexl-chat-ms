@@ -73,6 +73,7 @@ public class BaseControllerTest {
         INBOX.setPublicKey(INBOX_PUBLIC_KEY);
 
         MESSAGE = new Message();
+        MESSAGE.setId(1L);
         MESSAGE.setMessage(MESSAGE_TEST);
         MESSAGE.setPulled(false);
         MESSAGE.setSenderPublicKey(INBOX_PUBLIC_KEY);

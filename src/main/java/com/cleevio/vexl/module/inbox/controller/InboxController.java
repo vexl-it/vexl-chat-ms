@@ -119,14 +119,21 @@ public class InboxController {
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Send a message to the inbox.",
             description = "When user wants to contact someone, use this EP.")
-    void sendMessage(@Valid @RequestBody SendMessageRequest request) {
+    MessagesResponse.MessageResponse sendMessage(@Valid @RequestBody SendMessageRequest request) {
         challengeService.verifySignedChallenge(request.senderPublicKey(), request.signedChallenge());
 
         Inbox receiverInbox = this.inboxService.findInbox(request.receiverPublicKey());
-        this.messageService.sendMessageToInbox(request.senderPublicKey(), request.receiverPublicKey(), receiverInbox, request.message(), request.messageType());
+        return messageMapper.mapSingle(
+                this.messageService.sendMessageToInbox(
+                        request.senderPublicKey(),
+                        request.receiverPublicKey(),
+                        receiverInbox,
+                        request.message(),
+                        request.messageType()
+                )
+        );
     }
 
     @PostMapping("/approval/request")
@@ -135,13 +142,19 @@ public class InboxController {
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Requesting of an approval to send a message.",
             description = "First of all you have to get to user's whitelist, if you want to send a message someone.")
-    void sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
-                                 @Valid @RequestBody ApprovalRequest request) {
+    MessagesResponse.MessageResponse sendRequestToPermission(@RequestHeader(name = SecurityFilter.HEADER_PUBLIC_KEY) String publicKeySender,
+                                                             @Valid @RequestBody ApprovalRequest request) {
         Inbox receiverInbox = this.inboxService.findInbox(request.publicKey());
-        this.messageService.sendRequestToPermission(publicKeySender, request.publicKey(), receiverInbox, request.message());
+        return messageMapper.mapSingle(
+                this.messageService.sendRequestToPermission(
+                        publicKeySender,
+                        request.publicKey(),
+                        receiverInbox,
+                        request.message()
+                )
+        );
     }
 
     @PostMapping("/approval/confirm")
@@ -150,20 +163,33 @@ public class InboxController {
             @SecurityRequirement(name = SecurityFilter.HEADER_HASH),
             @SecurityRequirement(name = SecurityFilter.HEADER_SIGNATURE),
     })
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Approve request for an user.",
             description = "You received request for approval to send messages. You can approve/disapprove it and add user to your whitelist with this EP.")
-    void confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request) {
+    MessagesResponse.MessageResponse confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request) {
         challengeService.verifySignedChallenge(request.publicKey(), request.signedChallenge());
 
         Inbox requesterInbox = this.inboxService.findInbox(request.publicKeyToConfirm());
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         if (!request.approve()) {
             this.whitelistService.deleteFromWhiteList(inbox, request.publicKeyToConfirm());
-            this.messageService.sendDisapprovalMessage(request.publicKey(), request.publicKeyToConfirm(), requesterInbox, request.message());
+            return messageMapper.mapSingle(
+                    this.messageService.sendDisapprovalMessage(
+                            request.publicKey(),
+                            request.publicKeyToConfirm(),
+                            requesterInbox,
+                            request.message()
+                    )
+            );
         } else {
             this.whitelistService.connectRequesterAndReceiver(inbox, requesterInbox, request.publicKey(), request.publicKeyToConfirm());
-            this.messageService.sendMessageToInbox(request.publicKey(), request.publicKeyToConfirm(), requesterInbox, request.message(), MessageType.APPROVE_MESSAGING);
+            return messageMapper.mapSingle(
+                    this.messageService.sendMessageToInbox(
+                            request.publicKey(),
+                            request.publicKeyToConfirm(),
+                            requesterInbox,
+                            request.message(),
+                            MessageType.APPROVE_MESSAGING)
+            );
         }
     }
 

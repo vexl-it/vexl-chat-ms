@@ -69,7 +69,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessageToInbox(String senderPublicKey, String receiverPublicKey,
+    public Message sendMessageToInbox(String senderPublicKey, String receiverPublicKey,
                                    Inbox receiverInbox, String message,
                                    MessageType messageType) {
         advisoryLockService.lock(
@@ -83,11 +83,11 @@ public class MessageService {
             throw new WhiteListException();
         }
 
-        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, messageType);
+        return this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, messageType);
     }
 
     @Transactional
-    public void sendRequestToPermission(String senderPublicKey, String receiverPublicKey,
+    public Message sendRequestToPermission(String senderPublicKey, String receiverPublicKey,
                                         Inbox receiverInbox, String message) {
         advisoryLockService.lock(
                 ModuleLockNamespace.MESSAGE,
@@ -102,11 +102,11 @@ public class MessageService {
 
         this.whitelistService.createWhiteListEntity(receiverInbox, senderPublicKey, WhitelistState.WAITING);
 
-        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.REQUEST_MESSAGING);
+        return this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.REQUEST_MESSAGING);
     }
 
     @Transactional
-    public void sendDisapprovalMessage(String senderPublicKey, String receiverPublicKey,
+    public Message sendDisapprovalMessage(String senderPublicKey, String receiverPublicKey,
                                        Inbox receiverInbox, String message) {
         advisoryLockService.lock(
                 ModuleLockNamespace.MESSAGE,
@@ -114,7 +114,7 @@ public class MessageService {
                 receiverPublicKey, senderPublicKey
         );
 
-        this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.DISAPPROVE_MESSAGING);
+        return this.saveMessageToInboxAndSendNotification(senderPublicKey, receiverPublicKey, receiverInbox, message, MessageType.DISAPPROVE_MESSAGING);
     }
 
     @Transactional
@@ -151,22 +151,25 @@ public class MessageService {
         this.messageRepository.save(message);
     }
 
-    private void saveMessageToInboxAndSendNotification(String senderPublicKey, String receiverPublicKey,
-                                                       Inbox receiverInbox, String message,
-                                                       MessageType messageType) {
+    private Message saveMessageToInboxAndSendNotification(String senderPublicKey, String receiverPublicKey,
+                                                          Inbox receiverInbox, String message,
+                                                          MessageType messageType) {
 
         final Message messageEntity = createMessageEntity(senderPublicKey, receiverInbox, message, messageType);
-        this.messageRepository.save(messageEntity);
+        final Message savedMessage = this.messageRepository.save(messageEntity);
 
-        if (receiverInbox.getToken() == null) return;
-        this.applicationEventPublisher.publishEvent(
-                new NewMessageReceivedEvent(
-                        receiverInbox.getToken(),
-                        receiverInbox.getPlatform(),
-                        messageType,
-                        receiverPublicKey,
-                        senderPublicKey
-                ));
+        if (receiverInbox.getToken() != null) {
+            this.applicationEventPublisher.publishEvent(
+                    new NewMessageReceivedEvent(
+                            receiverInbox.getToken(),
+                            receiverInbox.getPlatform(),
+                            messageType,
+                            receiverPublicKey,
+                            senderPublicKey
+                    ));
+        }
+
+        return savedMessage;
     }
 
     private Message createMessageEntity(String senderPublicKey, Inbox receiverInbox,
