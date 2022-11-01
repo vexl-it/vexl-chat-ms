@@ -13,6 +13,9 @@ public record MessagesResponse(
 
     public record MessageResponse(
 
+            @Schema(description = "For ordering purposes.")
+            Long id,
+
             @Schema(description = "Encrypted message.")
             String message,
 

@@ -8,6 +8,7 @@ import com.cleevio.vexl.module.inbox.dto.request.MessageRequest;
 import com.cleevio.vexl.module.inbox.dto.request.UpdateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.response.MessagesResponse;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -39,6 +40,7 @@ class InboxControllerTest extends BaseControllerTest {
     private static final String DELETE_MESSAGES = DEFAULT_EP + "/messages";
     private static final String X_PLATFORM = "android";
     private static final UpdateInboxRequest UPDATE_INBOX_REQUEST;
+    private static final MessagesResponse.MessageResponse MESSAGE_RESPONSE;
     private static final MessageRequest MESSAGE_REQUEST;
     private static final BlockInboxRequest BLOCK_INBOX_REQUEST;
     private static final SignedChallenge SIGNED_CHALLENGE;
@@ -101,6 +103,13 @@ class InboxControllerTest extends BaseControllerTest {
         MESSAGE_REQUEST = new MessageRequest(INBOX_PUBLIC_KEY, SIGNED_CHALLENGE);
 
         BLOCK_INBOX_REQUEST = new BlockInboxRequest(INBOX_PUBLIC_KEY, PUBLIC_KEY_HEADER, true, SIGNED_CHALLENGE);
+
+        MESSAGE_RESPONSE = new MessagesResponse.MessageResponse(MESSAGE.getId(), MESSAGE.getMessage(), MESSAGE.getSenderPublicKey(), MESSAGE.getType());
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        when(challengeService.isSignedChallengeValid(INBOX_PUBLIC_KEY, SIGNED_CHALLENGE)).thenReturn(true);
     }
 
     @Test
@@ -137,11 +146,9 @@ class InboxControllerTest extends BaseControllerTest {
     @SneakyThrows
     void testRetrieveMessages_validInput_shouldReturn200() {
         final var messages = List.of(MESSAGE);
-        final var messageResponse = new MessagesResponse.MessageResponse(MESSAGE.getMessage(), MESSAGE.getSenderPublicKey(), MESSAGE.getType());
-        when(challengeService.isSignedChallengeValid(INBOX_PUBLIC_KEY, SIGNED_CHALLENGE)).thenReturn(true);
         when(inboxService.findInbox(INBOX_PUBLIC_KEY)).thenReturn(INBOX);
         when(messageService.retrieveMessages(INBOX)).thenReturn(messages);
-        when(messageMapper.mapList(messages)).thenReturn(List.of(messageResponse));
+        when(messageMapper.mapList(messages)).thenReturn(List.of(MESSAGE_RESPONSE));
 
         mvc.perform(put(MESSAGES_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
@@ -151,6 +158,7 @@ class InboxControllerTest extends BaseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(MESSAGE_REQUEST)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messages[0].id", is(MESSAGE.getId().intValue())))
                 .andExpect(jsonPath("$.messages[0].message", is(MESSAGE.getMessage())))
                 .andExpect(jsonPath("$.messages[0].senderPublicKey", is(MESSAGE.getSenderPublicKey())))
                 .andExpect(jsonPath("$.messages[0].messageType", is(MESSAGE.getType().name())));
@@ -159,7 +167,6 @@ class InboxControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     void testBlock_validInput_shouldReturn204() {
-        when(challengeService.isSignedChallengeValid(INBOX_PUBLIC_KEY, SIGNED_CHALLENGE)).thenReturn(true);
         when(inboxService.findInbox(INBOX_PUBLIC_KEY)).thenReturn(INBOX);
 
         mvc.perform(put(BLOCK_EP)
@@ -174,8 +181,10 @@ class InboxControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
-    void testPostMessage_validInput_shouldReturn204() {
+    void testPostMessage_validInput_shouldReturn200() {
         when(inboxService.findInbox(INBOX_PUBLIC_KEY)).thenReturn(INBOX);
+        when(messageService.sendMessageToInbox(any(), any(), any(), any(), any())).thenReturn(MESSAGE);
+        when(messageMapper.mapSingle(MESSAGE)).thenReturn(MESSAGE_RESPONSE);
 
         mvc.perform(post(POST_MESSAGE_EP)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
@@ -184,13 +193,19 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(POST_MESSAGE))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(MESSAGE.getId().intValue())))
+                .andExpect(jsonPath("$.message", is(MESSAGE.getMessage())))
+                .andExpect(jsonPath("$.senderPublicKey", is(MESSAGE.getSenderPublicKey())))
+                .andExpect(jsonPath("$.messageType", is(MESSAGE.getType().name())));
     }
 
     @Test
     @SneakyThrows
-    void testApprovalRequest_validInput_shouldReturn204() {
+    void testApprovalRequest_validInput_shouldReturn200() {
         when(inboxService.findInbox(INBOX_PUBLIC_KEY)).thenReturn(INBOX);
+        when(messageService.sendRequestToPermission(any(), any(), any(), any())).thenReturn(MESSAGE);
+        when(messageMapper.mapSingle(MESSAGE)).thenReturn(MESSAGE_RESPONSE);
 
         mvc.perform(post(APPROVAL_REQUEST)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
@@ -199,14 +214,19 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(APPROVAL_REQUEST_PAYLOAD))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(MESSAGE.getId().intValue())))
+                .andExpect(jsonPath("$.message", is(MESSAGE.getMessage())))
+                .andExpect(jsonPath("$.senderPublicKey", is(MESSAGE.getSenderPublicKey())))
+                .andExpect(jsonPath("$.messageType", is(MESSAGE.getType().name())));
     }
 
     @Test
     @SneakyThrows
-    void testApprovalConfirm_validInput_shouldReturn204() {
-        when(challengeService.isSignedChallengeValid(INBOX_PUBLIC_KEY, SIGNED_CHALLENGE)).thenReturn(true);
+    void testApprovalConfirm_validInput_shouldReturn200() {
         when(inboxService.findInbox(any())).thenReturn(INBOX);
+        when(messageService.sendMessageToInbox(any(), any(), any(), any(), any())).thenReturn(MESSAGE);
+        when(messageMapper.mapSingle(MESSAGE)).thenReturn(MESSAGE_RESPONSE);
 
         mvc.perform(post(APPROVAL_CONFIRM)
                         .header(SecurityFilter.HEADER_PUBLIC_KEY, PUBLIC_KEY_HEADER)
@@ -215,7 +235,11 @@ class InboxControllerTest extends BaseControllerTest {
                         .header(SecurityFilter.X_PLATFORM, X_PLATFORM)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(APPROVAL_CONFIRM_PAYLOAD))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(MESSAGE.getId().intValue())))
+                .andExpect(jsonPath("$.message", is(MESSAGE.getMessage())))
+                .andExpect(jsonPath("$.senderPublicKey", is(MESSAGE.getSenderPublicKey())))
+                .andExpect(jsonPath("$.messageType", is(MESSAGE.getType().name())));
     }
 
     @Test
