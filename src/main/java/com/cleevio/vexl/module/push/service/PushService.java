@@ -19,23 +19,23 @@ public class PushService {
     public void sendPushNotification(@Valid NewMessageReceivedEvent event) {
         switch (event.messageType()) {
             case MESSAGE ->
-                    notificationService.sendPushNotification(createPushMessageDto(event, "New message", "You have received a new message"));
+                    notificationService.sendPushNotification(createPushMessageDto(event, "New message", "You have received a new message."));
             case APPROVE_MESSAGING ->
                     notificationService.sendPushNotification(createPushMessageDto(event, "Approval", "You have been approved."));
             case REQUEST_MESSAGING ->
-                    notificationService.sendPushNotification(createPushMessageDto(event, "New request", "You have received a new request"));
+                    notificationService.sendPushNotification(createPushMessageDto(event, "New request", "You have received a new request."));
             case DISAPPROVE_MESSAGING ->
-                    notificationService.sendPushNotification(createPushMessageDto(event, "Approval rejected", "You have been rejected"));
+                    notificationService.sendPushNotification(createPushMessageDto(event, "Approval rejected", "You have been rejected."));
             case DELETE_CHAT ->
-                    notificationService.sendPushNotification(createPushMessageDto(event, "Chat deletion", "One of your chat has been deleted."));
+                    notificationService.sendPushNotification(createPushMessageDto(event, "Chat deletion", "One of your chats has been deleted."));
             case REQUEST_REVEAL ->
-                    notificationService.sendPushNotification(createPushMessageDto(event, "Request reveal", "You have been requested for reveal"));
+                    notificationService.sendPushNotification(createPushMessageDto(event, "Request reveal", "You have been requested for reveal."));
             case APPROVE_REVEAL ->
                     notificationService.sendPushNotification(createPushMessageDto(event, "Approve reveal", "Reveal was approved."));
             case DISAPPROVE_REVEAL ->
                     notificationService.sendPushNotification(createPushMessageDto(event, "Disapproval reveal", "Request for reveal was disapprove."));
             case BLOCK_CHAT ->
-                    notificationService.sendPushNotification(createPushMessageDto(event, "Chat blocked", "User blocked chat with you.."));
+                    notificationService.sendPushNotification(createPushMessageDto(event, "Chat blocked", "User blocked chat with you."));
         }
     }
 
