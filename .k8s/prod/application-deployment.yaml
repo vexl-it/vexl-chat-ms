@@ -101,3 +101,8 @@ spec:
                 secretKeyRef:
                   key: secret.firebase-token-uri
                   name: spring-profile-chat-ms
+            - name: SENTRY_DNS
+              valueFrom:
+                secretKeyRef:
+                  key: sentry.dsn
+                  name: spring-profile-chat-ms
