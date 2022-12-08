@@ -1,4 +1,4 @@
-package com.cleevio.vexl.module.inbox.constant;
+package com.cleevio.vexl.module.message.constant;
 
 public enum MessageAdvisoryLock {
 

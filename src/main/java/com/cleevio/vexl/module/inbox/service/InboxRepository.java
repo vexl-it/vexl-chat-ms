@@ -15,7 +15,7 @@ interface InboxRepository extends JpaRepository<Inbox, Long>, JpaSpecificationEx
 
     @Modifying
     @Query("""
-            update Inbox i set i.token = null 
+            update Inbox i set i.token = null
             where i.publicKey = :inboxPublicKey and i.token = :firebaseToken
             """)
     void deleteInvalidToken(String inboxPublicKey, String firebaseToken);

@@ -10,7 +10,7 @@ import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeCreateException;
 import com.cleevio.vexl.module.challenge.exception.ChallengeExpiredException;
 import com.cleevio.vexl.module.challenge.exception.InvalidChallengeSignature;
-import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
+import com.cleevio.vexl.module.challenge.service.query.VerifySignedChallengeQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,14 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -61,10 +60,10 @@ public class ChallengeService {
     }
 
     @Transactional
-    public boolean isSignedChallengeValid(@NotBlank String publicKey, @Valid @NotNull SignedChallenge signedChallenge) {
+    public boolean isSignedChallengeValid(@Valid VerifySignedChallengeQuery query) {
         Challenge challenge = this.challengeRepository.findByChallengeAndPublicKey(
-                signedChallenge.challenge(),
-                publicKey
+                query.signedChallenge().challenge(),
+                query.publicKey()
         ).orElseThrow(ChallengeExpiredException::new);
 
         invalidateChallenge(challenge);
@@ -78,7 +77,7 @@ public class ChallengeService {
                 challenge.getPublicKey(),
                 challenge.getChallenge(),
                 challenge.getChallenge().length(),
-                signedChallenge.signature()
+                query.signedChallenge().signature()
         );
     }
 
@@ -93,10 +92,21 @@ public class ChallengeService {
     }
 
     @Transactional
-    public void verifySignedChallenge(@NotBlank final String publicKey, @Valid @NotNull final SignedChallenge signedChallenge) {
-        if (!isSignedChallengeValid(publicKey, signedChallenge)) {
+    public void verifySignedChallenge(@Valid VerifySignedChallengeQuery query) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.CHALLENGE,
+                ChallengeAdvisoryLock.VERIFYING_CHALLENGE.name(),
+                query.publicKey()
+        );
+
+        if (!isSignedChallengeValid(query)) {
             throw new InvalidChallengeSignature();
         }
+    }
+
+    @Transactional
+    public void verifySignedChallengeForBatch(List<@Valid VerifySignedChallengeQuery> query) {
+        query.forEach(this::verifySignedChallenge);
     }
 
     private void invalidateChallenge(Challenge challenge) {

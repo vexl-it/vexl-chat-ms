@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 
 @Slf4j
@@ -26,6 +27,13 @@ public class WhitelistService {
 
     public boolean isSenderInWhitelistApproved(String publicKeySenderHash, Inbox receiverInbox) {
         return this.whitelistRepository.isSenderInWhitelist(publicKeySenderHash, receiverInbox, WhitelistState.APPROVED);
+    }
+
+    public boolean areAllSendersInReceiversWhitelistApproved(List<String> publicKeySender, List<String> receiverPublicKeys) {
+        if (publicKeySender.size() == receiverPublicKeys.size() && receiverPublicKeys.size() > 0) {
+            return this.whitelistRepository.areAllSendersInReceiversWhitelistApproved(publicKeySender, receiverPublicKeys, WhitelistState.APPROVED, (long) publicKeySender.size());
+        }
+        return false;
     }
 
     public boolean isSenderInWhitelist(String publicKeySenderHash, Inbox receiverInbox) {

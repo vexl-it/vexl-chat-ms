@@ -3,7 +3,6 @@ package com.cleevio.vexl.common.config;
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
 import com.cleevio.vexl.common.service.SignatureService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;

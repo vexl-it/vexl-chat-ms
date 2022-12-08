@@ -4,13 +4,16 @@ import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.inbox.constant.InboxAdvisoryLock;
 import com.cleevio.vexl.module.inbox.constant.Platform;
+import com.cleevio.vexl.module.inbox.dto.request.BatchDeletionRequest;
 import com.cleevio.vexl.module.inbox.dto.request.CreateInboxRequest;
 import com.cleevio.vexl.module.inbox.dto.request.DeletionRequest;
 import com.cleevio.vexl.module.inbox.dto.request.UpdateInboxRequest;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
+import com.cleevio.vexl.module.message.event.RequestRemoveInboxSentEvent;
 import com.cleevio.vexl.module.inbox.exception.InboxNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -26,8 +29,8 @@ import javax.validation.constraints.NotNull;
 public class InboxService {
 
     private final InboxRepository inboxRepository;
-    private final MessageService messageService;
     private final AdvisoryLockService advisoryLockService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public void createInbox(@Valid CreateInboxRequest request, @NotNull Platform platform) {
@@ -66,8 +69,13 @@ public class InboxService {
 
         final Inbox inbox = findInbox(request.publicKey());
 
-        this.messageService.deleteAllMessages(inbox);
+        applicationEventPublisher.publishEvent(new RequestRemoveInboxSentEvent(inbox));
         this.inboxRepository.delete(inbox);
+    }
+
+    @Transactional
+    public void deleteInboxBatch(@Valid BatchDeletionRequest request) {
+        request.dataForRemoval().forEach(it -> deleteInbox(new DeletionRequest(it.publicKey(), it.signedChallenge())));
     }
 
     @Transactional

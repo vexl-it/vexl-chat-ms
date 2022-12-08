@@ -1,11 +1,11 @@
 package com.cleevio.vexl.module.stats.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
-import com.cleevio.vexl.module.inbox.constant.MessageType;
+import com.cleevio.vexl.module.message.constant.MessageType;
 import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
-import com.cleevio.vexl.module.inbox.entity.Message;
-import com.cleevio.vexl.module.inbox.service.MessageService;
+import com.cleevio.vexl.module.message.entity.Message;
+import com.cleevio.vexl.module.message.service.MessageService;
 import com.cleevio.vexl.module.stats.constant.StatsKey;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;

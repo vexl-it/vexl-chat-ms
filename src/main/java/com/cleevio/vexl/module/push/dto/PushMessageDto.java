@@ -1,6 +1,6 @@
 package com.cleevio.vexl.module.push.dto;
 
-import com.cleevio.vexl.module.inbox.constant.MessageType;
+import com.cleevio.vexl.module.message.constant.MessageType;
 import com.cleevio.vexl.module.inbox.constant.Platform;
 
 public record PushMessageDto (

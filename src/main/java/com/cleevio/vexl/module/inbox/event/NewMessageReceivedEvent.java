@@ -1,6 +1,6 @@
 package com.cleevio.vexl.module.inbox.event;
 
-import com.cleevio.vexl.module.inbox.constant.MessageType;
+import com.cleevio.vexl.module.message.constant.MessageType;
 import com.cleevio.vexl.module.inbox.constant.Platform;
 
 import javax.validation.constraints.NotBlank;

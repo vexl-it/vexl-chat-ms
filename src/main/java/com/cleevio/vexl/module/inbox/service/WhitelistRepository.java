@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 interface WhitelistRepository extends JpaRepository<Whitelist, Long>, JpaSpecificationExecutor<Whitelist> {
@@ -24,4 +25,12 @@ interface WhitelistRepository extends JpaRepository<Whitelist, Long>, JpaSpecifi
     @Query("select w from Whitelist w where w.inbox = :inbox and w.publicKey = :publicKey and w.state = :state")
     Optional<Whitelist> findByPublicKey(Inbox inbox, String publicKey, WhitelistState state);
 
+    @Query("""
+            select case when (count(w) = :size) then true else false end from Whitelist w
+            INNER JOIN w.inbox i
+            where i.publicKey in :receiverPublicKeysHashes
+            and w.publicKey in :publicKeySenderHashes
+            and w.state = :state
+            """)
+    boolean areAllSendersInReceiversWhitelistApproved(List<String> publicKeySenderHashes, List<String> receiverPublicKeysHashes, WhitelistState state, Long size);
 }

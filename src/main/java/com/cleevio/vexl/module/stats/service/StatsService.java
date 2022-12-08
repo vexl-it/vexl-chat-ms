@@ -2,7 +2,7 @@ package com.cleevio.vexl.module.stats.service;
 
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
-import com.cleevio.vexl.module.inbox.service.MessageService;
+import com.cleevio.vexl.module.message.service.MessageService;
 import com.cleevio.vexl.module.stats.constant.StatsKey;
 import com.cleevio.vexl.module.stats.constant.StatsAdvisoryLock;
 import com.cleevio.vexl.module.stats.dto.StatsDto;
