@@ -5,6 +5,7 @@ import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.challenge.config.ChallengeConfig;
 import com.cleevio.vexl.module.challenge.constant.ChallengeAdvisoryLock;
+import com.cleevio.vexl.module.challenge.dto.request.CreateBatchChallengeRequest;
 import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeCreateException;
@@ -23,6 +24,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -46,17 +48,18 @@ public class ChallengeService {
         );
 
         log.info("Creating new challenge for public key [{}]", request.publicKey());
-        try {
-            final String challenge = generateRandomChallenge();
-            createNewChallenge(challenge, request.publicKey());
-            return challenge;
-        } catch (NoSuchAlgorithmException e) {
-            log.error("Error while generating the challenge.", e);
-            throw new ChallengeCreateException();
-        } catch (Exception e) {
-            log.error("Error while creating the challenge", e);
-            throw new ChallengeCreateException();
-        }
+
+        final String challenge = generateRandomChallenge();
+        createNewChallenge(challenge, request.publicKey());
+        return challenge;
+    }
+
+    @Transactional
+    public List<Challenge> createBatchChallenge(@Valid CreateBatchChallengeRequest request) {
+        final List<Challenge> challengeList = new ArrayList<>();
+        request.publicKeys().forEach(key -> challengeList.add(createActiveChallengeEntity(generateRandomChallenge(), key)));
+
+        return this.challengeRepository.saveAll(challengeList);
     }
 
     @Transactional
@@ -128,12 +131,20 @@ public class ChallengeService {
                 .build();
     }
 
-    private String generateRandomChallenge() throws NoSuchAlgorithmException {
-        byte[] bytes = generateCodeVerifier().getBytes(StandardCharsets.US_ASCII);
-        MessageDigest messageDigest = MessageDigest.getInstance(SHA256);
-        messageDigest.update(bytes, 0, bytes.length);
-        byte[] digest = messageDigest.digest();
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+    private String generateRandomChallenge() {
+        try {
+            byte[] bytes = generateCodeVerifier().getBytes(StandardCharsets.US_ASCII);
+            MessageDigest messageDigest = MessageDigest.getInstance(SHA256);
+            messageDigest.update(bytes, 0, bytes.length);
+            byte[] digest = messageDigest.digest();
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Error while getting instance of algorithm: " + e.getMessage(), e);
+            throw new ChallengeCreateException();
+        } catch (Exception e) {
+            log.error("Error while creating the challenge: " + e.getMessage(), e);
+            throw new ChallengeCreateException();
+        }
     }
 
     private String generateCodeVerifier() {

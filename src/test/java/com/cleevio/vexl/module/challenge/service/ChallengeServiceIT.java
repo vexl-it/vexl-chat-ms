@@ -2,6 +2,8 @@ package com.cleevio.vexl.module.challenge.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
 import com.cleevio.vexl.common.cryptolib.CLibrary;
+import com.cleevio.vexl.module.challenge.dto.request.CreateBatchChallengeRequest;
+import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeExpiredException;
 import com.cleevio.vexl.module.challenge.service.query.VerifySignedChallengeQuery;
 import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
@@ -10,6 +12,9 @@ import com.cleevio.vexl.utils.RequestCreatorTestUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,8 +31,9 @@ class ChallengeServiceIT {
     }
 
     private static final String PUBLIC_KEY_USER_A = CryptographyTestKeysUtil.PUBLIC_KEY_USER_A;
+    private static final String PUBLIC_KEY_USER_B = CryptographyTestKeysUtil.PUBLIC_KEY_USER_B;
     private static final String PRIVATE_KEY_USER_A = CryptographyTestKeysUtil.PRIVATE_KEY_USER_A;
-    private static final String PRIVATE_KEY_USER_B = CryptographyTestKeysUtil.PUBLIC_KEY_USER_B;
+    private static final String PRIVATE_KEY_USER_B = CryptographyTestKeysUtil.PRIVATE_KEY_USER_B;
 
     @Test
     void testSigningChallenge_shouldSignAndBeSuccessfullyVerified() {
@@ -84,5 +90,24 @@ class ChallengeServiceIT {
                 ChallengeExpiredException.class,
                 () -> this.challengeService.isSignedChallengeValid(new VerifySignedChallengeQuery(PUBLIC_KEY_USER_A, new SignedChallenge(challenge, signature)))
         );
+    }
+
+    @Test
+    void testCreatingBatchChallengesSignThemAndVerifyThem_shouldBeCreatedSignedAndVerified() {
+        final List<Challenge> batchChallenge = this.challengeService.createBatchChallenge(new CreateBatchChallengeRequest(Set.of(PUBLIC_KEY_USER_A, PUBLIC_KEY_USER_B)));
+
+        assertThat(batchChallenge).hasSize(2);
+
+        final String challengeForA = batchChallenge.stream().filter(c -> c.getPublicKey().equals(PUBLIC_KEY_USER_A)).toList().get(0).getChallenge();
+        final String challengeForB = batchChallenge.stream().filter(c -> c.getPublicKey().equals(PUBLIC_KEY_USER_B)).toList().get(0).getChallenge();
+
+        final String signatureA = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForA, challengeForA.length());
+        final String signatureB = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_B, PRIVATE_KEY_USER_B, challengeForB, challengeForB.length());
+
+        final boolean resultA = this.challengeService.isSignedChallengeValid(new VerifySignedChallengeQuery(PUBLIC_KEY_USER_A, new SignedChallenge(challengeForA, signatureA)));
+        final boolean resultB = this.challengeService.isSignedChallengeValid(new VerifySignedChallengeQuery(PUBLIC_KEY_USER_B, new SignedChallenge(challengeForB, signatureB)));
+
+        assertThat(resultA).isTrue();
+        assertThat(resultB).isTrue();
     }
 }
