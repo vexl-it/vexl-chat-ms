@@ -61,7 +61,7 @@ public class ChallengeService {
     }
 
     @Transactional
-    public boolean isSignedChallengeValid(@NotBlank String publicKey, @Valid @NotNull SignedChallenge signedChallenge) {
+    public boolean isSignedChallengeValid(@NotBlank String publicKey, @Valid @NotNull SignedChallenge signedChallenge, final int cryptoVersion) {
         Challenge challenge = this.challengeRepository.findByChallengeAndPublicKey(
                 signedChallenge.challenge(),
                 publicKey
@@ -74,6 +74,14 @@ public class ChallengeService {
             throw new ChallengeExpiredException();
         }
 
+        if (cryptoVersion >= 2) {
+            return CLibrary.CRYPTO_LIB.ecdsa_verify_v2(
+                    challenge.getPublicKey(),
+                    challenge.getChallenge(),
+                    challenge.getChallenge().length(),
+                    signedChallenge.signature()
+            );
+        }
         return CLibrary.CRYPTO_LIB.ecdsa_verify(
                 challenge.getPublicKey(),
                 challenge.getChallenge(),
@@ -93,8 +101,8 @@ public class ChallengeService {
     }
 
     @Transactional
-    public void verifySignedChallenge(@NotBlank final String publicKey, @Valid @NotNull final SignedChallenge signedChallenge) {
-        if (!isSignedChallengeValid(publicKey, signedChallenge)) {
+    public void verifySignedChallenge(@NotBlank final String publicKey, @Valid @NotNull final SignedChallenge signedChallenge, final int cryptoVersion) {
+        if (!isSignedChallengeValid(publicKey, signedChallenge, cryptoVersion)) {
             throw new InvalidChallengeSignature();
         }
     }

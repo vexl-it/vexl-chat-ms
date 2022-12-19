@@ -23,6 +23,13 @@ public interface CLibrary extends Library {
     String ecdsa_sign(String base64_public_key, String base64_private_key, String data, int data_len);
 
     /**
+     * ECDSA V2
+     */
+    boolean ecdsa_verify_v2(String base64_public_key, String data, int data_len, String base64_signature);
+
+    String ecdsa_sign_v2(String base64_public_key, String base64_private_key, String data, int data_len);
+
+    /**
      * ECIES
      */
     String ecies_encrypt(String base64_public_key, String message);
