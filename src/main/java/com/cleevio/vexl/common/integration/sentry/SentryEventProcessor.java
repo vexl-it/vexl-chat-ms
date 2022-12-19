@@ -1,15 +1,9 @@
 package com.cleevio.vexl.common.integration.sentry;
 
 import com.cleevio.vexl.common.exception.ApiException;
-import io.sentry.EventProcessor;
-import io.sentry.SentryEvent;
 import io.sentry.SentryOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Configuration
 public class SentryEventProcessor {

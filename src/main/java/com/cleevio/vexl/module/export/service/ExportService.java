@@ -2,7 +2,7 @@ package com.cleevio.vexl.module.export.service;
 
 import com.cleevio.vexl.module.export.exception.ExportFailedException;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
-import com.cleevio.vexl.module.inbox.entity.Message;
+import com.cleevio.vexl.module.message.entity.Message;
 import com.cleevio.vexl.module.inbox.entity.Whitelist;
 import com.cleevio.vexl.module.inbox.service.InboxService;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
-package com.cleevio.vexl.module.inbox.dto.request;
+package com.cleevio.vexl.module.message.dto.request;
 
 import com.cleevio.vexl.common.annotation.CheckAllowedMessageType;
-import com.cleevio.vexl.module.inbox.constant.MessageType;
+import com.cleevio.vexl.module.message.constant.MessageType;
 import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
 import io.swagger.v3.oas.annotations.media.Schema;
 

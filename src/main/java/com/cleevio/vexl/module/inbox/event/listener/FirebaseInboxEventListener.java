@@ -1,6 +1,6 @@
 package com.cleevio.vexl.module.inbox.event.listener;
 
-import com.cleevio.vexl.common.integration.firebase.event.FirebaseTokenInvalidedEvent;
+import com.cleevio.vexl.common.integration.firebase.event.FirebaseTokenInvalidatedEvent;
 import com.cleevio.vexl.module.inbox.service.InboxService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -19,7 +19,7 @@ class FirebaseInboxEventListener {
 
     @Async
     @EventListener
-    public void onFirebaseTokenInvalidedEvent(@Valid FirebaseTokenInvalidedEvent event) {
+    public void onFirebaseTokenInvalidatedEvent(@Valid FirebaseTokenInvalidatedEvent event) {
         this.inboxService.deleteInvalidToken(event.inboxPublicKey(), event.firebaseToken());
     }
 

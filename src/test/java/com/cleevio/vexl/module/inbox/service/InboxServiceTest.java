@@ -8,6 +8,7 @@ import com.cleevio.vexl.module.inbox.entity.Inbox;
 import com.cleevio.vexl.module.inbox.exception.InboxNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 
@@ -31,13 +32,13 @@ class InboxServiceTest {
     private static final String SIGNATURE = "dummy_signature";
 
     private final InboxRepository inboxRepository = mock(InboxRepository.class);
-    private final MessageService messageService = mock(MessageService.class);
+    private final ApplicationEventPublisher applicationEventPublisher = mock(ApplicationEventPublisher.class);
     private final AdvisoryLockService advisoryLockService = mock(AdvisoryLockService.class);
 
     private final InboxService inboxService = new InboxService(
             inboxRepository,
-            messageService,
-            advisoryLockService
+            advisoryLockService,
+            applicationEventPublisher
     );
 
     static {

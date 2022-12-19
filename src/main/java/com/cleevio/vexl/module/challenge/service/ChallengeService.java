@@ -5,12 +5,13 @@ import com.cleevio.vexl.common.cryptolib.CLibrary;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.challenge.config.ChallengeConfig;
 import com.cleevio.vexl.module.challenge.constant.ChallengeAdvisoryLock;
+import com.cleevio.vexl.module.challenge.dto.request.CreateBatchChallengeRequest;
 import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.entity.Challenge;
 import com.cleevio.vexl.module.challenge.exception.ChallengeCreateException;
 import com.cleevio.vexl.module.challenge.exception.ChallengeExpiredException;
 import com.cleevio.vexl.module.challenge.exception.InvalidChallengeSignature;
-import com.cleevio.vexl.module.inbox.dto.SignedChallenge;
+import com.cleevio.vexl.module.challenge.service.query.VerifySignedChallengeQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,14 +19,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -47,24 +48,25 @@ public class ChallengeService {
         );
 
         log.info("Creating new challenge for public key [{}]", request.publicKey());
-        try {
-            final String challenge = generateRandomChallenge();
-            createNewChallenge(challenge, request.publicKey());
-            return challenge;
-        } catch (NoSuchAlgorithmException e) {
-            log.error("Error while generating the challenge.", e);
-            throw new ChallengeCreateException();
-        } catch (Exception e) {
-            log.error("Error while creating the challenge", e);
-            throw new ChallengeCreateException();
-        }
+
+        final String challenge = generateRandomChallenge();
+        createNewChallenge(challenge, request.publicKey());
+        return challenge;
     }
 
     @Transactional
-    public boolean isSignedChallengeValid(@NotBlank String publicKey, @Valid @NotNull SignedChallenge signedChallenge, final int cryptoVersion) {
+    public List<Challenge> createBatchChallenge(@Valid CreateBatchChallengeRequest request) {
+        final List<Challenge> challengeList = new ArrayList<>();
+        request.publicKeys().forEach(key -> challengeList.add(createActiveChallengeEntity(generateRandomChallenge(), key)));
+
+        return this.challengeRepository.saveAll(challengeList);
+    }
+
+    @Transactional
+    public boolean isSignedChallengeValid(@Valid VerifySignedChallengeQuery query, final int cryptoVersion) {
         Challenge challenge = this.challengeRepository.findByChallengeAndPublicKey(
-                signedChallenge.challenge(),
-                publicKey
+                query.signedChallenge().challenge(),
+                query.publicKey()
         ).orElseThrow(ChallengeExpiredException::new);
 
         invalidateChallenge(challenge);
@@ -86,7 +88,7 @@ public class ChallengeService {
                 challenge.getPublicKey(),
                 challenge.getChallenge(),
                 challenge.getChallenge().length(),
-                signedChallenge.signature()
+                query.signedChallenge().signature()
         );
     }
 
@@ -101,10 +103,21 @@ public class ChallengeService {
     }
 
     @Transactional
-    public void verifySignedChallenge(@NotBlank final String publicKey, @Valid @NotNull final SignedChallenge signedChallenge, final int cryptoVersion) {
-        if (!isSignedChallengeValid(publicKey, signedChallenge, cryptoVersion)) {
+    public void verifySignedChallenge(@Valid VerifySignedChallengeQuery query, final int cryptoVersion) {
+        advisoryLockService.lock(
+                ModuleLockNamespace.CHALLENGE,
+                ChallengeAdvisoryLock.VERIFYING_CHALLENGE.name(),
+                query.publicKey()
+        );
+
+        if (!isSignedChallengeValid(query, cryptoVersion)) {
             throw new InvalidChallengeSignature();
         }
+    }
+
+    @Transactional
+    public void verifySignedChallengeForBatch(List<@Valid VerifySignedChallengeQuery> query) {
+        query.forEach(this::verifySignedChallenge);
     }
 
     private void invalidateChallenge(Challenge challenge) {
@@ -126,12 +139,20 @@ public class ChallengeService {
                 .build();
     }
 
-    private String generateRandomChallenge() throws NoSuchAlgorithmException {
-        byte[] bytes = generateCodeVerifier().getBytes(StandardCharsets.US_ASCII);
-        MessageDigest messageDigest = MessageDigest.getInstance(SHA256);
-        messageDigest.update(bytes, 0, bytes.length);
-        byte[] digest = messageDigest.digest();
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+    private String generateRandomChallenge() {
+        try {
+            byte[] bytes = generateCodeVerifier().getBytes(StandardCharsets.US_ASCII);
+            MessageDigest messageDigest = MessageDigest.getInstance(SHA256);
+            messageDigest.update(bytes, 0, bytes.length);
+            byte[] digest = messageDigest.digest();
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Error while getting instance of algorithm: " + e.getMessage(), e);
+            throw new ChallengeCreateException();
+        } catch (Exception e) {
+            log.error("Error while creating the challenge: " + e.getMessage(), e);
+            throw new ChallengeCreateException();
+        }
     }
 
     private String generateCodeVerifier() {

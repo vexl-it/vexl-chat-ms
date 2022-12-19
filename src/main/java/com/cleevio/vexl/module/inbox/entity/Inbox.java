@@ -3,6 +3,7 @@ package com.cleevio.vexl.module.inbox.entity;
 import com.cleevio.vexl.common.convertor.AesEncryptionConvertor;
 import com.cleevio.vexl.common.convertor.Sha256HashConvertor;
 import com.cleevio.vexl.module.inbox.constant.Platform;
+import com.cleevio.vexl.module.message.entity.Message;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

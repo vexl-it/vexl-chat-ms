@@ -1,7 +1,8 @@
-package com.cleevio.vexl.module.inbox.entity;
+package com.cleevio.vexl.module.message.entity;
 
 import com.cleevio.vexl.common.convertor.AesEncryptionConvertor;
-import com.cleevio.vexl.module.inbox.constant.MessageType;
+import com.cleevio.vexl.module.message.constant.MessageType;
+import com.cleevio.vexl.module.inbox.entity.Inbox;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,6 +1,6 @@
 package com.cleevio.vexl.common.integration.firebase.service;
 
-import com.cleevio.vexl.common.integration.firebase.event.FirebaseTokenInvalidedEvent;
+import com.cleevio.vexl.common.integration.firebase.event.FirebaseTokenInvalidatedEvent;
 import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.cleevio.vexl.module.push.dto.PushMessageDto;
 import com.cleevio.vexl.module.push.service.NotificationService;
@@ -50,7 +50,7 @@ public class FirebaseService implements NotificationService {
 
     private void handleException(final FirebaseMessagingException e, PushMessageDto dto) {
         switch (e.getErrorCode().name()) {
-            case ErrorCode.TOKEN_NOT_REGISTERED, ErrorCode.INVALID_TOKEN -> applicationEventPublisher.publishEvent(new FirebaseTokenInvalidedEvent(dto.senderPublicKey(), dto.token()));
+            case ErrorCode.TOKEN_NOT_REGISTERED, ErrorCode.INVALID_TOKEN -> applicationEventPublisher.publishEvent(new FirebaseTokenInvalidatedEvent(dto.senderPublicKey(), dto.token()));
             default -> log.error("Error errored during sending push notification: " + e.getMessage(), e);
         }
     }

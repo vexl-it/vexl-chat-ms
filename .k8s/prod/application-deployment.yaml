@@ -56,11 +56,6 @@ spec:
                 secretKeyRef:
                   key: spring.datasource.password
                   name: spring-profile-chat-ms
-            - name: SECURITY_ENCRYPTION_KEY
-              valueFrom:
-                secretKeyRef:
-                  key: security.encryption.key
-                  name: spring-profile-chat-ms
             - name: SIGNATURE_PUBLIC_KEY
               valueFrom:
                 secretKeyRef:

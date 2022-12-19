@@ -1,8 +1,11 @@
-package com.cleevio.vexl.module.inbox.service;
+package com.cleevio.vexl.module.message.service;
 
 import com.cleevio.vexl.common.service.AdvisoryLockService;
+import com.cleevio.vexl.module.challenge.service.ChallengeService;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
-import com.cleevio.vexl.module.inbox.entity.Message;
+import com.cleevio.vexl.module.inbox.service.InboxService;
+import com.cleevio.vexl.module.inbox.service.WhitelistService;
+import com.cleevio.vexl.module.message.entity.Message;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -22,12 +25,16 @@ class MessageServiceTest {
 
     private final MessageRepository messageRepository = mock(MessageRepository.class);
     private final WhitelistService whitelistService = mock(WhitelistService.class);
+    private final InboxService inboxService = mock(InboxService.class);
     private final AdvisoryLockService advisoryLockService = mock(AdvisoryLockService.class);
+    private final ChallengeService challengeService = mock(ChallengeService.class);
     private final ApplicationEventPublisher applicationEventPublisher = mock(ApplicationEventPublisher.class);
 
     private final MessageService messageService = new MessageService(
             messageRepository,
             whitelistService,
+            inboxService,
+            challengeService,
             applicationEventPublisher,
             advisoryLockService
     );

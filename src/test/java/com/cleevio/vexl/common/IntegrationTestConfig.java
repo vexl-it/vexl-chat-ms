@@ -7,7 +7,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 public class IntegrationTestConfig {
 
-    public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.6")
+    public static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.6")
             .withDatabaseName("integration-tests-db")
             .withUsername("sa")
             .withPassword("sa")

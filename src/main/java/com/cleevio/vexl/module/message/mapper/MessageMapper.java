@@ -1,7 +1,7 @@
-package com.cleevio.vexl.module.inbox.mapper;
+package com.cleevio.vexl.module.message.mapper;
 
-import com.cleevio.vexl.module.inbox.dto.response.MessagesResponse;
-import com.cleevio.vexl.module.inbox.entity.Message;
+import com.cleevio.vexl.module.message.dto.response.MessagesResponse;
+import com.cleevio.vexl.module.message.entity.Message;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
