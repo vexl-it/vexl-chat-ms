@@ -6,7 +6,8 @@ services:
     volumes:
       - ./:/vexl/chat
       - maven:/etc/maven2
+      - ../.m2/:/root/.m2
     working_dir: '/vexl/chat'
-    command: mvn test
+    command: sh -c "chmod +x mvnw && ./mvnw -Djacoco.skip=true clean test integration-test"
 volumes:
   maven:
