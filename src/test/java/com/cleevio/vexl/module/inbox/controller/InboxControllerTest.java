@@ -15,7 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 
 import static org.hamcrest.core.Is.is;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -93,7 +93,7 @@ class InboxControllerTest extends BaseControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        when(challengeService.isSignedChallengeValid(VERIFY_SIGNED_CHALLENGE_QUERY)).thenReturn(true);
+        when(challengeService.isSignedChallengeValid(eq(VERIFY_SIGNED_CHALLENGE_QUERY), anyInt())).thenReturn(true);
     }
 
     @Test

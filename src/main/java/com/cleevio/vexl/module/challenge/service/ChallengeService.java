@@ -81,7 +81,7 @@ public class ChallengeService {
                     challenge.getPublicKey(),
                     challenge.getChallenge(),
                     challenge.getChallenge().length(),
-                    signedChallenge.signature()
+                    query.signedChallenge().signature()
             );
         }
         return CLibrary.CRYPTO_LIB.ecdsa_verify(
@@ -116,8 +116,8 @@ public class ChallengeService {
     }
 
     @Transactional
-    public void verifySignedChallengeForBatch(List<@Valid VerifySignedChallengeQuery> query) {
-        query.forEach(this::verifySignedChallenge);
+    public void verifySignedChallengeForBatch(List<@Valid VerifySignedChallengeQuery> query, final int cryptoVersion) {
+        query.forEach(verifySignedChallengeQuery -> verifySignedChallenge(verifySignedChallengeQuery, cryptoVersion));
     }
 
     private void invalidateChallenge(Challenge challenge) {

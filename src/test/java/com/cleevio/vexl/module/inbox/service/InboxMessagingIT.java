@@ -265,7 +265,78 @@ class InboxMessagingIT {
                 new SignedChallenge(challengeForUserB, signatureForUserB)
         );
 
-        this.messageService.sendMessagesBatch(sendMessageBatchRequest);
+        this.messageService.sendMessagesBatch(sendMessageBatchRequest, 1);
+
+        final var messageList = this.messageService.findAll();
+
+        final var messagesByUserA = messageList
+                .stream()
+                .filter(it -> it.getSenderPublicKey().equals(PUBLIC_KEY_USER_A))
+                .filter(it -> it.getType().equals(MessageType.MESSAGE))
+                .toList();
+
+        final var messagesByUserB = messageList
+                .stream()
+                .filter(it -> it.getSenderPublicKey().equals(PUBLIC_KEY_USER_B))
+                .filter(it -> it.getType().equals(MessageType.MESSAGE))
+                .toList();
+
+        assertThat(messagesByUserA).hasSize(1);
+        assertThat(messagesByUserB).hasSize(1);
+
+        assertThat(messagesByUserA.get(0).getMessage()).isEqualTo(MESSAGE_TO_SENDER_1);
+        assertThat(messagesByUserA.get(0).getSenderPublicKey()).isEqualTo(PUBLIC_KEY_USER_A);
+        assertThat(messagesByUserA.get(0).getInbox().getPublicKey()).isEqualTo(PUBLIC_KEY_USER_C);
+
+        assertThat(messagesByUserB.get(0).getMessage()).isEqualTo(MESSAGE_TO_SENDER_2);
+        assertThat(messagesByUserB.get(0).getSenderPublicKey()).isEqualTo(PUBLIC_KEY_USER_B);
+        assertThat(messagesByUserB.get(0).getInbox().getPublicKey()).isEqualTo(PUBLIC_KEY_USER_D);
+    }
+
+
+    @Test
+    void testBatchMessage_v2_shouldBeSentAllMessages() {
+        final var requestUserA = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_A);
+        final var requestUserB = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_B);
+        final var requestUserC = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_C);
+        final var requestUserD = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_D);
+
+        //creating new inboxes
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        this.inboxService.createInbox(requestUserB, Platform.IOS);
+        this.inboxService.createInbox(requestUserC, Platform.IOS);
+        this.inboxService.createInbox(requestUserD, Platform.IOS);
+
+        final Inbox inboxA = this.inboxService.findInbox(PUBLIC_KEY_USER_A);
+        final Inbox inboxB = this.inboxService.findInbox(PUBLIC_KEY_USER_B);
+        final Inbox inboxC = this.inboxService.findInbox(PUBLIC_KEY_USER_C);
+        final Inbox inboxD = this.inboxService.findInbox(PUBLIC_KEY_USER_D);
+
+        //connect A with C and B with D
+        this.messageService.sendRequestToPermission(new SendMessageToInboxQuery(PUBLIC_KEY_USER_A, PUBLIC_KEY_USER_C, inboxC, REQUEST_APPROVAL_MESSAGE, MessageType.REQUEST_MESSAGING));
+        this.whitelistService.connectRequesterAndReceiver(inboxC, inboxA, PUBLIC_KEY_USER_C, PUBLIC_KEY_USER_A);
+
+        this.messageService.sendRequestToPermission(new SendMessageToInboxQuery(PUBLIC_KEY_USER_B, PUBLIC_KEY_USER_D, inboxD, REQUEST_APPROVAL_MESSAGE, MessageType.REQUEST_MESSAGING));
+        this.whitelistService.connectRequesterAndReceiver(inboxD, inboxB, PUBLIC_KEY_USER_D, PUBLIC_KEY_USER_B);
+
+        // create and sign challenges for senders
+        final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
+        final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
+
+        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign_v2(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
+        final String signatureForUserB = CLibrary.CRYPTO_LIB.ecdsa_sign_v2(PUBLIC_KEY_USER_B, PRIVATE_KEY_USER_B, challengeForUserB, challengeForUserB.length());
+
+        final var sendMessageBatchRequest = RequestCreatorTestUtil.createSendMessageBatchRequest(
+                PUBLIC_KEY_USER_A,
+                PUBLIC_KEY_USER_C,
+                new SignedChallenge(challengeForUserA, signatureForUserA),
+
+                PUBLIC_KEY_USER_B,
+                PUBLIC_KEY_USER_D,
+                new SignedChallenge(challengeForUserB, signatureForUserB)
+        );
+
+        this.messageService.sendMessagesBatch(sendMessageBatchRequest, 2);
 
         final var messageList = this.messageService.findAll();
 
@@ -330,7 +401,7 @@ class InboxMessagingIT {
                 new SignedChallenge(challengeForUserB, signatureForUserB)
         );
 
-        this.messageService.sendMessagesBatch(sendMessageBatchRequest);
+        this.messageService.sendMessagesBatch(sendMessageBatchRequest, 1);
 
         final var messageList = this.messageService.findAll();
 
@@ -386,7 +457,7 @@ class InboxMessagingIT {
                 new SignedChallenge(challengeForUserB, signatureForUserB)
         );
 
-        this.messageService.sendMessagesBatch(sendMessageBatchRequest);
+        this.messageService.sendMessagesBatch(sendMessageBatchRequest, 1);
 
         final var messageList = this.messageService.findAll();
 
@@ -438,7 +509,57 @@ class InboxMessagingIT {
 
         assertThrows(
                 InvalidChallengeSignature.class,
-                () -> this.messageService.sendMessagesBatch(sendMessageBatchRequest)
+                () -> this.messageService.sendMessagesBatch(sendMessageBatchRequest, 1)
+        );
+    }
+
+
+    @Test
+    void testBatchMessage_invalidSignature_v2_shouldReturnInvalidChallengeException() {
+        final var requestUserA = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_A);
+        final var requestUserB = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_B);
+        final var requestUserC = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_C);
+        final var requestUserD = RequestCreatorTestUtil.createInboxRequest(PUBLIC_KEY_USER_D);
+
+        //creating new inboxes
+        this.inboxService.createInbox(requestUserA, Platform.ANDROID);
+        this.inboxService.createInbox(requestUserB, Platform.IOS);
+        this.inboxService.createInbox(requestUserC, Platform.IOS);
+        this.inboxService.createInbox(requestUserD, Platform.IOS);
+
+        final Inbox inboxA = this.inboxService.findInbox(PUBLIC_KEY_USER_A);
+        final Inbox inboxB = this.inboxService.findInbox(PUBLIC_KEY_USER_B);
+        final Inbox inboxC = this.inboxService.findInbox(PUBLIC_KEY_USER_C);
+        final Inbox inboxD = this.inboxService.findInbox(PUBLIC_KEY_USER_D);
+
+        //connect A with C and B with D
+        this.messageService.sendRequestToPermission(new SendMessageToInboxQuery(PUBLIC_KEY_USER_A, PUBLIC_KEY_USER_C, inboxC, REQUEST_APPROVAL_MESSAGE, MessageType.REQUEST_MESSAGING));
+        this.whitelistService.connectRequesterAndReceiver(inboxC, inboxA, PUBLIC_KEY_USER_C, PUBLIC_KEY_USER_A);
+
+        this.messageService.sendRequestToPermission(new SendMessageToInboxQuery(PUBLIC_KEY_USER_B, PUBLIC_KEY_USER_D, inboxD, REQUEST_APPROVAL_MESSAGE, MessageType.REQUEST_MESSAGING));
+        this.whitelistService.connectRequesterAndReceiver(inboxD, inboxB, PUBLIC_KEY_USER_D, PUBLIC_KEY_USER_B);
+
+        // create and sign challenges for senders
+        final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
+        final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
+
+        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign_v2(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
+
+        // create request with wrong signature in case of use B
+
+        final var sendMessageBatchRequest = RequestCreatorTestUtil.createSendMessageBatchRequest(
+                PUBLIC_KEY_USER_A,
+                PUBLIC_KEY_USER_C,
+                new SignedChallenge(challengeForUserA, signatureForUserA),
+
+                PUBLIC_KEY_USER_B,
+                PUBLIC_KEY_USER_D,
+                new SignedChallenge(challengeForUserB, "dummy_signature")
+        );
+
+        assertThrows(
+                InvalidChallengeSignature.class,
+                () -> this.messageService.sendMessagesBatch(sendMessageBatchRequest, 2)
         );
     }
 
