@@ -4,5 +4,5 @@ public enum Platform {
 
     ANDROID,
     IOS,
-    ;
+    CLI,
 }

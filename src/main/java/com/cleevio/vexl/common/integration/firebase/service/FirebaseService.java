@@ -26,6 +26,10 @@ public class FirebaseService implements NotificationService {
     private static final String SENDER = "sender";
 
     public void sendPushNotification(final PushMessageDto dto) {
+        if (Platform.CLI.equals(dto.platform())) {
+            log.info("Can not send push notification to CLI platform");
+            return;
+        }
         try {
             var messageBuilder = Message.builder();
 
