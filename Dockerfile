@@ -5,7 +5,6 @@ ARG CI_COMMIT_SHORT_SHA
 ARG KUBE_DOMAIN
 ARG PROFILE
 
-VOLUME /tmp
 COPY ./target/vexl-0.0.1-SNAPSHOT.jar ./application.jar
 
 RUN echo "\
