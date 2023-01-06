@@ -56,7 +56,7 @@ jobs:
             KUBE_DOMAIN=vexl.it
             PROFILE=stage
           tags: |
-            ghcr.io/${{ github.repository_owner }}/chat-ms:stage
-            ghcr.io/${{ github.repository_owner }}/chat-ms:stage-${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/chat-ms-stage:latest
+            ghcr.io/${{ github.repository_owner }}/chat-ms-stage:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/vexl:chat-ms-stage
             ${{ steps.login-ecr.outputs.registry }}/vexl:chat-ms-stage-${{ github.sha }}
