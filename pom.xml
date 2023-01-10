@@ -11,8 +11,8 @@
     <groupId>com.cleevio</groupId>
     <artifactId>vexl</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>vexl</name>
-    <description>vexl</description>
+    <name>vexl-chat</name>
+    <description>vexl-chat</description>
 
     <properties>
         <java.version>17</java.version>
