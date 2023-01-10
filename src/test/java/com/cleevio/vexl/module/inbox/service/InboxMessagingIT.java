@@ -1,7 +1,7 @@
 package com.cleevio.vexl.module.inbox.service;
 
 import com.cleevio.vexl.common.IntegrationTest;
-import com.cleevio.vexl.common.cryptolib.CLibrary;
+import com.cleevio.vexl.common.cryptolib.CryptoLibrary;
 import com.cleevio.vexl.module.challenge.dto.request.CreateChallengeRequest;
 import com.cleevio.vexl.module.challenge.exception.InvalidChallengeSignature;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
@@ -252,8 +252,8 @@ class InboxMessagingIT {
         final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
         final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
 
-        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
-        final String signatureForUserB = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_B, PRIVATE_KEY_USER_B, challengeForUserB, challengeForUserB.length());
+        final String signatureForUserA = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_A, challengeForUserA);
+        final String signatureForUserB = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_B, challengeForUserB);
 
         final var sendMessageBatchRequest = RequestCreatorTestUtil.createSendMessageBatchRequest(
                 PUBLIC_KEY_USER_A,
@@ -323,8 +323,8 @@ class InboxMessagingIT {
         final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
         final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
 
-        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign_v2(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
-        final String signatureForUserB = CLibrary.CRYPTO_LIB.ecdsa_sign_v2(PUBLIC_KEY_USER_B, PRIVATE_KEY_USER_B, challengeForUserB, challengeForUserB.length());
+        final String signatureForUserA = CryptoLibrary.instance.ecdsaSignV2(PRIVATE_KEY_USER_A, challengeForUserA);
+        final String signatureForUserB = CryptoLibrary.instance.ecdsaSignV2(PRIVATE_KEY_USER_B, challengeForUserB);
 
         final var sendMessageBatchRequest = RequestCreatorTestUtil.createSendMessageBatchRequest(
                 PUBLIC_KEY_USER_A,
@@ -388,8 +388,8 @@ class InboxMessagingIT {
         final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
         final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
 
-        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
-        final String signatureForUserB = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_B, PRIVATE_KEY_USER_B, challengeForUserB, challengeForUserB.length());
+        final String signatureForUserA = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_A, challengeForUserA);
+        final String signatureForUserB = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_B, challengeForUserB);
 
         final var sendMessageBatchRequest = RequestCreatorTestUtil.createSendMessageBatchRequest(
                 PUBLIC_KEY_USER_A,
@@ -444,8 +444,8 @@ class InboxMessagingIT {
         final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
         final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
 
-        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
-        final String signatureForUserB = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_B, PRIVATE_KEY_USER_B, challengeForUserB, challengeForUserB.length());
+        final String signatureForUserA = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_A, challengeForUserA);
+        final String signatureForUserB = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_B, challengeForUserB);
 
         final var sendMessageBatchRequest = RequestCreatorTestUtil.createSendMessageBatchRequest(
                 PUBLIC_KEY_USER_A,
@@ -493,7 +493,7 @@ class InboxMessagingIT {
         final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
         final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
 
-        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
+        final String signatureForUserA = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_A, challengeForUserA);
 
         // create request with wrong signature in case of use B
 
@@ -543,7 +543,7 @@ class InboxMessagingIT {
         final String challengeForUserA = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_A));
         final String challengeForUserB = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_B));
 
-        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign_v2(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
+        final String signatureForUserA = CryptoLibrary.instance.ecdsaSignV2(PRIVATE_KEY_USER_A, challengeForUserA);
 
         // create request with wrong signature in case of use B
 
@@ -585,10 +585,10 @@ class InboxMessagingIT {
         final String challengeForUserC = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_C));
         final String challengeForUserD = this.challengeService.createChallenge(new CreateChallengeRequest(PUBLIC_KEY_USER_D));
 
-        final String signatureForUserA = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_A, PRIVATE_KEY_USER_A, challengeForUserA, challengeForUserA.length());
-        final String signatureForUserB = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_B, PRIVATE_KEY_USER_B, challengeForUserB, challengeForUserB.length());
-        final String signatureForUserC = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_C, PRIVATE_KEY_USER_C, challengeForUserC, challengeForUserC.length());
-        final String signatureForUserD = CLibrary.CRYPTO_LIB.ecdsa_sign(PUBLIC_KEY_USER_D, PRIVATE_KEY_USER_D, challengeForUserD, challengeForUserD.length());
+        final String signatureForUserA = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_A, challengeForUserA);
+        final String signatureForUserB = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_B, challengeForUserB);
+        final String signatureForUserC = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_C, challengeForUserC);
+        final String signatureForUserD = CryptoLibrary.instance.ecdsaSignV1(PRIVATE_KEY_USER_D, challengeForUserD);
 
         final List<DeletionRequest> deletionRequests = List.of(
                 new DeletionRequest(PUBLIC_KEY_USER_A, new SignedChallenge(challengeForUserA, signatureForUserA)),

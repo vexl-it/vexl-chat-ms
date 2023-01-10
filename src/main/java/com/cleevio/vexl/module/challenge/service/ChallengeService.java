@@ -1,7 +1,7 @@
 package com.cleevio.vexl.module.challenge.service;
 
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
-import com.cleevio.vexl.common.cryptolib.CLibrary;
+import com.cleevio.vexl.common.cryptolib.CryptoLibrary;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.challenge.config.ChallengeConfig;
 import com.cleevio.vexl.module.challenge.constant.ChallengeAdvisoryLock;
@@ -77,17 +77,15 @@ public class ChallengeService {
         }
 
         if (cryptoVersion >= 2) {
-            return CLibrary.CRYPTO_LIB.ecdsa_verify_v2(
+            return CryptoLibrary.instance.ecdsaVerifyV2(
                     challenge.getPublicKey(),
                     challenge.getChallenge(),
-                    challenge.getChallenge().length(),
                     query.signedChallenge().signature()
             );
         }
-        return CLibrary.CRYPTO_LIB.ecdsa_verify(
+        return CryptoLibrary.instance.ecdsaVerifyV1(
                 challenge.getPublicKey(),
                 challenge.getChallenge(),
-                challenge.getChallenge().length(),
                 query.signedChallenge().signature()
         );
     }
