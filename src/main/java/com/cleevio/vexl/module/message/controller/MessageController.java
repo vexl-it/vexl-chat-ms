@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.message.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.common.util.NumberUtils;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
 import com.cleevio.vexl.module.challenge.service.query.VerifySignedChallengeQuery;
 import com.cleevio.vexl.module.inbox.entity.Inbox;
@@ -19,12 +20,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -52,8 +48,10 @@ public class MessageController {
             Signature in the request params is to verify that the client owns the private key to the public key that he claims is his.\040
             First you need to retrieve challenge for verification in challenge API. Then sign it with private key and the signature send here.
             """)
-    MessagesResponse retrieveMessages(@Valid @RequestBody MessageRequest request) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()));
+    MessagesResponse retrieveMessages(@Valid @RequestBody MessageRequest request,
+                                      @RequestHeader(value = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()), cryptoVersion);
 
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         List<Message> messages = this.messageService.retrieveMessages(inbox);
@@ -68,8 +66,10 @@ public class MessageController {
     })
     @Operation(summary = "Send a message to the inbox.",
             description = "When user wants to contact someone, use this EP.")
-    MessagesResponse.MessageResponse sendMessage(@Valid @RequestBody SendMessageRequest request) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.senderPublicKey(), request.signedChallenge()));
+    MessagesResponse.MessageResponse sendMessage(@Valid @RequestBody SendMessageRequest request,
+                                                 @RequestHeader(value = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.senderPublicKey(), request.signedChallenge()), cryptoVersion);
 
         Inbox receiverInbox = this.inboxService.findInbox(request.receiverPublicKey());
         return messageMapper.mapSingle(
@@ -97,7 +97,9 @@ public class MessageController {
                     user must send to all his contacts info about it via message.
                     EP returns only successfully sent messages in response.
                     """)
-    List<MessagesResponse.MessageResponse> sendMessagesInBatch(@RequestBody SendMessageBatchRequest request) {
-        return messageMapper.mapList(this.messageService.sendMessagesBatch(request));
+    List<MessagesResponse.MessageResponse> sendMessagesInBatch(@RequestBody SendMessageBatchRequest request,
+                                                               @RequestHeader(value = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        return messageMapper.mapList(this.messageService.sendMessagesBatch(request, cryptoVersion));
     }
 }

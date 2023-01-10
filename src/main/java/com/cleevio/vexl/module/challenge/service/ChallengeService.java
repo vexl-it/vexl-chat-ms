@@ -1,7 +1,7 @@
 package com.cleevio.vexl.module.challenge.service;
 
 import com.cleevio.vexl.common.constant.ModuleLockNamespace;
-import com.cleevio.vexl.common.cryptolib.CLibrary;
+import com.cleevio.vexl.common.cryptolib.CryptoLibrary;
 import com.cleevio.vexl.common.service.AdvisoryLockService;
 import com.cleevio.vexl.module.challenge.config.ChallengeConfig;
 import com.cleevio.vexl.module.challenge.constant.ChallengeAdvisoryLock;
@@ -63,7 +63,7 @@ public class ChallengeService {
     }
 
     @Transactional
-    public boolean isSignedChallengeValid(@Valid VerifySignedChallengeQuery query) {
+    public boolean isSignedChallengeValid(@Valid VerifySignedChallengeQuery query, final int cryptoVersion) {
         Challenge challenge = this.challengeRepository.findByChallengeAndPublicKey(
                 query.signedChallenge().challenge(),
                 query.publicKey()
@@ -76,10 +76,16 @@ public class ChallengeService {
             throw new ChallengeExpiredException();
         }
 
-        return CLibrary.CRYPTO_LIB.ecdsa_verify(
+        if (cryptoVersion >= 2) {
+            return CryptoLibrary.instance.ecdsaVerifyV2(
+                    challenge.getPublicKey(),
+                    challenge.getChallenge(),
+                    query.signedChallenge().signature()
+            );
+        }
+        return CryptoLibrary.instance.ecdsaVerifyV1(
                 challenge.getPublicKey(),
                 challenge.getChallenge(),
-                challenge.getChallenge().length(),
                 query.signedChallenge().signature()
         );
     }
@@ -95,21 +101,21 @@ public class ChallengeService {
     }
 
     @Transactional
-    public void verifySignedChallenge(@Valid VerifySignedChallengeQuery query) {
+    public void verifySignedChallenge(@Valid VerifySignedChallengeQuery query, final int cryptoVersion) {
         advisoryLockService.lock(
                 ModuleLockNamespace.CHALLENGE,
                 ChallengeAdvisoryLock.VERIFYING_CHALLENGE.name(),
                 query.publicKey()
         );
 
-        if (!isSignedChallengeValid(query)) {
+        if (!isSignedChallengeValid(query, cryptoVersion)) {
             throw new InvalidChallengeSignature();
         }
     }
 
     @Transactional
-    public void verifySignedChallengeForBatch(List<@Valid VerifySignedChallengeQuery> query) {
-        query.forEach(this::verifySignedChallenge);
+    public void verifySignedChallengeForBatch(List<@Valid VerifySignedChallengeQuery> query, final int cryptoVersion) {
+        query.forEach(verifySignedChallengeQuery -> verifySignedChallenge(verifySignedChallengeQuery, cryptoVersion));
     }
 
     private void invalidateChallenge(Challenge challenge) {

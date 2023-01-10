@@ -4,6 +4,7 @@ import com.cleevio.vexl.common.dto.ErrorResponse;
 import com.cleevio.vexl.common.security.AuthenticationHolder;
 import com.cleevio.vexl.common.service.SignatureService;
 import com.cleevio.vexl.common.service.query.CheckSignatureValidityQuery;
+import com.cleevio.vexl.common.util.NumberUtils;
 import com.cleevio.vexl.module.inbox.constant.Platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     public static final String HEADER_HASH = "hash";
     public static final String HEADER_SIGNATURE = "signature";
     public static final String X_PLATFORM = "X-Platform";
+    public static final String HEADER_CRYPTO_VERSION = "crypto-version";
 
     private final SignatureService signatureService;
 
@@ -40,6 +42,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         final String hash = request.getHeader(HEADER_HASH);
         final String signature = request.getHeader(HEADER_SIGNATURE);
         final String platform = request.getHeader(X_PLATFORM);
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(request.getHeader(HEADER_CRYPTO_VERSION), 1);
 
         if (signature == null || publicKey == null || hash == null || platform == null || !requestURI.contains("/api/v1/")) {
             filterChain.doFilter(request, response);
@@ -49,7 +52,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         try {
             Platform.valueOf(platform.toUpperCase());
 
-            if (signatureService.isSignatureValid(new CheckSignatureValidityQuery(publicKey, hash, signature))) {
+            if (signatureService.isSignatureValid(new CheckSignatureValidityQuery(publicKey, hash, signature), cryptoVersion)) {
                 AuthenticationHolder authenticationHolder;
 
                 authenticationHolder = new AuthenticationHolder(null, null);

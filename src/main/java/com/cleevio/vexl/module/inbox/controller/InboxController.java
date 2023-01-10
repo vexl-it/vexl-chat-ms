@@ -1,6 +1,7 @@
 package com.cleevio.vexl.module.inbox.controller;
 
 import com.cleevio.vexl.common.security.filter.SecurityFilter;
+import com.cleevio.vexl.common.util.NumberUtils;
 import com.cleevio.vexl.module.challenge.service.ChallengeService;
 import com.cleevio.vexl.module.challenge.service.query.VerifySignedChallengeQuery;
 import com.cleevio.vexl.module.inbox.constant.Platform;
@@ -61,8 +62,10 @@ public class InboxController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Create a new inbox.", description = "Every user and every offer must have own inbox.")
     void createInbox(@RequestBody CreateInboxRequest request,
-                     @RequestHeader(name = SecurityFilter.X_PLATFORM) String platform) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()));
+                     @RequestHeader(name = SecurityFilter.X_PLATFORM) String platform,
+                     @RequestHeader(name = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()), cryptoVersion);
         this.inboxService.createInbox(request, Platform.valueOf(platform.toUpperCase()));
     }
 
@@ -74,8 +77,10 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.ACCEPTED)
     @Operation(summary = "Update a existing inbox.", description = "You can update only Firebase token.")
-    ResponseEntity<InboxResponse> updateInbox(@RequestBody UpdateInboxRequest request) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()));
+    ResponseEntity<InboxResponse> updateInbox(@RequestBody UpdateInboxRequest request,
+                                              @RequestHeader(name = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()), cryptoVersion);
         return new ResponseEntity<>(new InboxResponse(this.inboxService.updateInbox(request)), HttpStatus.ACCEPTED);
     }
 
@@ -87,8 +92,10 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Block/unblock the public key so user can't send you a messages.")
-    void blockInbox(@RequestBody BlockInboxRequest request) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()));
+    void blockInbox(@RequestBody BlockInboxRequest request,
+                    @RequestHeader(name = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()), cryptoVersion);
 
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         this.whitelistService.blockPublicKey(inbox, request);
@@ -127,8 +134,10 @@ public class InboxController {
     })
     @Operation(summary = "Approve request for an user.",
             description = "You received request for approval to send messages. You can approve/disapprove it and add user to your whitelist with this EP.")
-    MessagesResponse.MessageResponse confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()));
+    MessagesResponse.MessageResponse confirmPermission(@Valid @RequestBody ApprovalConfirmRequest request,
+                                                       @RequestHeader(name = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()), cryptoVersion);
 
         Inbox requesterInbox = this.inboxService.findInbox(request.publicKeyToConfirm());
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
@@ -170,8 +179,10 @@ public class InboxController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Delete messages what you already have pulled.",
             description = "After every pull, check if you have all messages and then remove them with this EP.")
-    void deletePulledMessages(@Valid @RequestBody DeletionRequest request) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()));
+    void deletePulledMessages(@Valid @RequestBody DeletionRequest request,
+                              @RequestHeader(name = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()), cryptoVersion);
 
         Inbox inbox = this.inboxService.findInbox(request.publicKey());
         this.messageService.deletePulledMessages(inbox);
@@ -185,8 +196,10 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Delete inbox with all messages.")
-    void deleteInbox(@RequestBody DeletionRequest request) {
-        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()));
+    void deleteInbox(@RequestBody DeletionRequest request,
+                     @RequestHeader(name = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
+        challengeService.verifySignedChallenge(new VerifySignedChallengeQuery(request.publicKey(), request.signedChallenge()), cryptoVersion);
 
         this.inboxService.deleteInbox(request);
     }
@@ -199,10 +212,12 @@ public class InboxController {
     })
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Delete inboxes with all messages.")
-    void deleteInboxBatch(@RequestBody BatchDeletionRequest request) {
+    void deleteInboxBatch(@RequestBody BatchDeletionRequest request,
+                          @RequestHeader(name = SecurityFilter.HEADER_CRYPTO_VERSION, defaultValue = "1") final String cryptoVersionRaw) {
+        final int cryptoVersion = NumberUtils.parseIntOrFallback(cryptoVersionRaw, 1);
         final List<VerifySignedChallengeQuery> queryList = new ArrayList<>();
         request.dataForRemoval().forEach(it -> queryList.add(new VerifySignedChallengeQuery(it.publicKey(), it.signedChallenge())));
-        challengeService.verifySignedChallengeForBatch(queryList);
+        challengeService.verifySignedChallengeForBatch(queryList, cryptoVersion);
 
         this.inboxService.deleteInboxBatch(request);
     }

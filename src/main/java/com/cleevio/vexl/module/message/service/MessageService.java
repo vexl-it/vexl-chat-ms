@@ -78,8 +78,8 @@ public class MessageService {
     }
 
     @Transactional
-    public List<Message> sendMessagesBatch(@Valid SendMessageBatchRequest request) {
-        verifyBatchChallenges(request);
+    public List<Message> sendMessagesBatch(@Valid SendMessageBatchRequest request, final int cryptoVersion) {
+        verifyBatchChallenges(request, cryptoVersion);
 
         final List<SendMessageToInboxQuery> queryList = new ArrayList<>();
 
@@ -190,10 +190,10 @@ public class MessageService {
         return messageRepository.findAll();
     }
 
-    private void verifyBatchChallenges(SendMessageBatchRequest request) {
+    private void verifyBatchChallenges(SendMessageBatchRequest request, final int cryptoVersion) {
         final List<VerifySignedChallengeQuery> queryListForVerification = new ArrayList<>();
         request.data().forEach(batch -> queryListForVerification.add(new VerifySignedChallengeQuery(batch.senderPublicKey(), batch.signedChallenge())));
-        challengeService.verifySignedChallengeForBatch(queryListForVerification);
+        challengeService.verifySignedChallengeForBatch(queryListForVerification, cryptoVersion);
     }
 
     private boolean areAllSendersInReceiversWhitelistApproved(SendMessageBatchRequest request) {
